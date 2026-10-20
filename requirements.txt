@@ -1,0 +1,5 @@
+# Yang dibutuhkan situs (FastAPI). Harus sama dengan daftar di pyproject.toml, yang dipakai Vercel.
+numpy
+fastapi
+uvicorn
+psycopg[binary]

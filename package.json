@@ -1,0 +1,13 @@
+{
+  "name": "crs-onet",
+  "private": true,
+  "description": "Hanya untuk membangun web/static/tailwind.css. Aplikasinya Python (lihat README).",
+  "scripts": {
+    "css": "tailwindcss -i web/tailwind.css -o web/static/tailwind.css --minify",
+    "css:watch": "tailwindcss -i web/tailwind.css -o web/static/tailwind.css --watch"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.3.3",
+    "tailwindcss": "^4.3.3"
+  }
+}

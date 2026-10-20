@@ -1,0 +1,117 @@
+/* Source for web/static/tailwind.css. Rebuild after changing classes in web/static:
+     npm install   (sekali saja)
+     npm run css                                                                              */
+@import "tailwindcss";
+@source "./static";
+
+@theme {
+  --font-sans:
+    "Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+    sans-serif;
+  --color-brand-50: #eff5ff;
+  --color-brand-100: #dce9ff;
+  --color-brand-200: #bfd6ff;
+  --color-brand-300: #8fb8ff;
+  --color-brand-400: #5c9bff;
+  --color-brand-500: #2f80ff;
+  --color-brand-600: #1f66e0;
+  --color-brand-700: #184fb3;
+  --color-ink: #0f1e3d;
+  --color-mute: #5b6b8a;
+  --animate-rise: rise 0.35s ease-out both;
+  --animate-float: float 6s ease-in-out infinite;
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+}
+body {
+  @apply bg-white font-sans text-ink antialiased;
+}
+button {
+  cursor: pointer;
+}
+button:disabled {
+  cursor: not-allowed;
+}
+
+/* Questions slide out to one side and in from the other. */
+.q-card { transition: opacity 0.14s ease, transform 0.14s ease; }
+.q-out-left { opacity: 0; transform: translateX(-18px); }
+.q-out-right { opacity: 0; transform: translateX(18px); }
+.q-in-right { animation: q-in-right 0.24s ease-out both; }
+.q-in-left { animation: q-in-left 0.24s ease-out both; }
+@keyframes q-in-right {
+  from { opacity: 0; transform: translateX(26px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes q-in-left {
+  from { opacity: 0; transform: translateX(-26px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .q-card, .q-in-right, .q-in-left, .animate-rise, .animate-float { animation: none; transition: none; }
+}
+
+@layer components {
+  .btn,
+  .btn-primary,
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 disabled:opacity-50;
+  }
+  .btn-primary {
+    @apply bg-brand-500 text-white shadow-sm shadow-brand-500/30 hover:bg-brand-600 active:scale-[.98];
+  }
+  .btn-ghost {
+    @apply border border-slate-200 bg-white text-ink hover:border-brand-300 hover:text-brand-600;
+  }
+  .btn-link {
+    @apply font-semibold text-brand-600 hover:text-brand-700 hover:underline;
+  }
+  .card {
+    @apply rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm shadow-slate-900/5;
+  }
+  .field {
+    @apply w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-sm outline-none transition placeholder:text-slate-400 focus:border-brand-400 focus:bg-white focus:ring-4 focus:ring-brand-100;
+  }
+  .label {
+    @apply mb-1.5 block text-sm font-semibold;
+  }
+  .chip {
+    @apply inline-flex items-center gap-1 rounded-full bg-brand-50 px-3 py-1 text-xs font-semibold text-brand-700;
+  }
+  .logo-box {
+    @apply inline-flex items-center rounded-xl bg-brand-500 px-4 py-2;
+  }
+  .logo-box img {
+    @apply block h-8 w-auto;
+  }
+  .nav-item {
+    @apply flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-left text-sm font-semibold text-mute transition hover:bg-brand-50 hover:text-brand-700;
+  }
+  .nav-item.active {
+    @apply bg-brand-500 text-white shadow-sm shadow-brand-500/30 hover:bg-brand-500 hover:text-white;
+  }
+  .nav-item.locked {
+    @apply opacity-45;
+  }
+}

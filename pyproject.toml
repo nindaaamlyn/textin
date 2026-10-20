@@ -1,0 +1,15 @@
+# Dipakai Vercel untuk menjalankan situs. Daftar paket di sini harus sama dengan requirements.txt.
+[project]
+name = "texin"
+version = "1.0.0"
+description = "Sistem rekomendasi karier berbasis O*NET 31.0"
+requires-python = ">=3.12"
+dependencies = [
+    "numpy",
+    "fastapi",
+    "uvicorn",
+    "psycopg[binary]",
+]
+
+[tool.vercel]
+entrypoint = "web.app:app"

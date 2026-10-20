@@ -1,0 +1,25 @@
+# Jawaban siswa (data pribadi) - jangan pernah diunggah
+data/*.sqlite3
+data/*.sqlite3-journal
+data/*.sqlite3-wal
+data/*.sqlite3-shm
+
+# Rahasia aplikasi (alamat basis data dan kata sandi ekspor)
+.env
+
+# Lingkungan Python dan berkas hasil jalan
+.venv/
+__pycache__/
+*.pyc
+
+# Notebook dan alat bantu
+.ipynb_checkpoints/
+.playwright-mcp/
+
+# Editor dan sistem operasi
+.vscode/
+.idea/
+.DS_Store
+
+# Alat pembangun CSS (npm install)
+node_modules/

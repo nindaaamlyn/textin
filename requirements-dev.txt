@@ -1,0 +1,3 @@
+# Untuk pengembangan: tes
+-r requirements.txt
+httpx
