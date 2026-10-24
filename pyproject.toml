@@ -5,10 +5,10 @@ version = "1.0.0"
 description = "Sistem rekomendasi karier berbasis O*NET 31.0"
 requires-python = ">=3.12"
 dependencies = [
-    "numpy",
-    "fastapi",
-    "uvicorn",
-    "psycopg[binary]",
+    "numpy>=2.2.6,<3",
+    "fastapi~=0.162.0",
+    "uvicorn~=0.54.0",
+    "psycopg[binary]~=3.3.6",
 ]
 
 [tool.vercel]

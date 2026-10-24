@@ -1,3 +1,5 @@
 # Untuk pengembangan: tes
 -r requirements.txt
 httpx
+# Untuk menjalankan di komputer sendiri: uvicorn --env-file .env
+python-dotenv

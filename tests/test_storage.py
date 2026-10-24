@@ -3,6 +3,7 @@
 The Postgres half runs only when TEST_DATABASE_URL points at a scratch database, for example:
     TEST_DATABASE_URL=postgresql://localhost:54329/postgres .venv/bin/python -m unittest tests.test_storage
 """
+import json
 import os
 import secrets
 import tempfile
@@ -34,6 +35,74 @@ class StorageContract:
         self.assertIsNone(store.get_login_user("tidak-ada"))
         store.delete_login("hash-baru")
         self.assertIsNone(store.get_login_user("hash-baru"))
+
+    def test_new_password_ends_every_login(self):
+        store = self.store
+        uid, email = self.new_user()
+        store.add_login(uid, "hash-hp", "2999-01-01T00:00:00+00:00")
+        store.add_login(uid, "hash-laptop", "2999-01-01T00:00:00+00:00")
+        store.set_password(uid, "scrypt$baru")
+        self.assertEqual(store.get_user_by_email(email)["password_hash"], "scrypt$baru")
+        self.assertIsNone(store.get_login_user("hash-hp"))
+        self.assertIsNone(store.get_login_user("hash-laptop"))
+        self.assertEqual(store.get_user(uid)["email"], email)
+        self.assertIsNone(store.get_user("tidak-ada"))
+
+        store.add_login(uid, "hash-ini", "2999-01-01T00:00:00+00:00")
+        store.add_login(uid, "hash-lain", "2999-01-01T00:00:00+00:00")
+        store.set_password(uid, "scrypt$lagi", keep_login="hash-ini")
+        self.assertIsNotNone(store.get_login_user("hash-ini"))
+        self.assertIsNone(store.get_login_user("hash-lain"))
+
+    def test_reset_links_expire_are_replaced_and_used_up(self):
+        store = self.store
+        uid, email = self.new_user()
+        store.add_password_reset(uid, "link-lama", "2999-01-01T00:00:00+00:00")
+        store.add_password_reset(uid, "link-baru", "2999-01-01T00:00:00+00:00")
+        self.assertIsNone(store.get_password_reset_user("link-lama"))       # only the newest one works
+        self.assertEqual(store.get_password_reset_user("link-baru")["email"], email)
+        store.set_password(uid, "scrypt$baru")
+        self.assertIsNone(store.get_password_reset_user("link-baru"))       # a new password uses it up
+        store.add_password_reset(uid, "link-basi", "2000-01-01T00:00:00+00:00")
+        self.assertIsNone(store.get_password_reset_user("link-basi"))       # expired
+
+    def test_admin_lists_users_and_feedback(self):
+        store = self.store
+        uid, email = self.new_user()
+        quiet, _ = self.new_user("Budi")
+        first = store.add_result(uid, None, [1] * 60, SUMMARY)
+        store.add_result(uid, None, [2] * 60, SUMMARY)
+        store.save_result_feedback(first, 4, 5, "jelas")
+        users = {u["id"]: u for u in store.all_users()}
+        self.assertEqual((users[uid]["tests"], users[uid]["email"]), (2, email))
+        self.assertIsNotNone(users[uid]["last_test"])
+        self.assertEqual((users[quiet]["tests"], users[quiet]["last_test"]), (0, None))
+        fb = next(f for f in store.all_feedback_with_users() if f["result_id"] == first)
+        self.assertEqual((fb["name"], fb["email"], fb["relevance"], fb["ease"], fb["comment"]),
+                         ("Sari", email, 4, 5, "jelas"))
+        self.assertEqual(fb["summary"], SUMMARY)
+
+    def test_export_keeps_ids_and_defuses_formulas(self):
+        uid, _ = self.new_user()
+        rid = "-" + secrets.token_hex(6)                                # random ids may start with "-"
+        self.store._run("INSERT INTO results (id, user_id, created_at, max_job_zone, answers, summary) "
+                        "VALUES (?, ?, ?, ?, ?, ?)",
+                        (rid, uid, "2026-01-01T00:00:00+00:00", None, json.dumps([1] * 60), json.dumps(SUMMARY)))
+        self.store.save_result_feedback(rid, 3, 3, "=1+1")
+        line = next(l for l in service.export_feedback(self.store).splitlines() if l.startswith(rid))
+        self.assertTrue(line.endswith(",'=1+1"), line)
+
+    def test_attempts_are_counted_per_kind_and_key(self):
+        store = self.store
+        key = secrets.token_hex(6)
+        for _ in range(3):
+            store.add_attempt("password", key, "2000-01-01T00:00:00+00:00")
+        store.add_attempt("reset-email", key, "2000-01-01T00:00:00+00:00")
+        self.assertEqual(store.count_attempts("password", key, "2000-01-01T00:00:00+00:00"), 3)
+        self.assertEqual(store.count_attempts("password", key, "2999-01-01T00:00:00+00:00"), 0)   # all older
+        store.clear_attempts("password", key)
+        self.assertEqual(store.count_attempts("password", key, "2000-01-01T00:00:00+00:00"), 0)
+        self.assertEqual(store.count_attempts("reset-email", key, "2000-01-01T00:00:00+00:00"), 1)
 
     def test_progress_is_one_per_user_and_replaced(self):
         store = self.store

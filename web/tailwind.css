@@ -68,6 +68,12 @@ button:disabled {
   from { opacity: 0; transform: translateX(-26px); }
   to { opacity: 1; transform: translateX(0); }
 }
+/* "Cetak / Simpan PDF" on the admin page: the feedback table is wide. */
+@page { size: A4 landscape; margin: 12mm; }
+@media print {
+  tr { break-inside: avoid; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .q-card, .q-in-right, .q-in-left, .animate-rise, .animate-float { animation: none; transition: none; }
 }

@@ -27,12 +27,34 @@ export const ICONS = {
   target: "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM12 11.500v1",
   eye: "M2 12s3.600-7 10-7 10 7 10 7-3.600 7-10 7S2 12 2 12zM12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6z",
   eyeOff: "M2 12s3.600-7 10-7 10 7 10 7-3.600 7-10 7S2 12 2 12zM12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6zM4 4l16 16",
-  spark: "M12 3v5M12 16v5M3 12h5M16 12h5M6 6l3 3M15 15l3 3M18 6l-3 3M9 15l-3 3",
+  shield: "M12 3 4 6v6c0 4.500 3.400 8 8 9 4.600-1 8-4.500 8-9V6zM9 12l2 2 4-4",
+  spark:"M12 3v5M12 16v5M3 12h5M16 12h5M6 6l3 3M15 15l3 3M18 6l-3 3M9 15l-3 3",
 };
 export const icon = (name, cls = "h-5 w-5") =>
   `<svg class="${cls} shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${ICONS[name]}"/></svg>`;
 
-export const logo = (route = "") =>
+const spinner = `<svg class="h-4 w-4 shrink-0 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="3" class="opacity-25"/><path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>`;
+
+/** Disable a button and show a spinner in it until `work` (a promise) settles, so it cannot be
+    sent twice. The page may be redrawn meanwhile; then the new button is already fresh. */
+export async function whileBusy(button, work) {
+  if (!button) return work;
+  const label = button.innerHTML;
+  button.disabled = true;
+  button.setAttribute("aria-busy", "true");
+  button.innerHTML = `${spinner}<span>${h(button.textContent.trim())}</span>`;
+  try {
+    return await work;
+  } finally {
+    if (button.isConnected) {
+      button.innerHTML = label;
+      button.disabled = false;
+      button.removeAttribute("aria-busy");
+    }
+  }
+}
+
+export const logo =(route = "") =>
   `<a href="#/${route}" class="logo-box" aria-label="texin - find your career"><img src="/static/img/texin-putih.png" alt="texin - find your career"></a>`;
 
 export function ring(percent, size = 76) {

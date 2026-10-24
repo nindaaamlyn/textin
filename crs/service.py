@@ -4,6 +4,7 @@ Used by the FastAPI app (web/app.py).
 """
 import csv
 import io
+from datetime import datetime, timedelta, timezone
 from functools import lru_cache
 
 import numpy as np
@@ -171,6 +172,14 @@ def recommendation(answers, max_job_zone=None, top_n=10):
 
 
 # ---------------------------------------------------------------- export for the project team
+def _typed(text):
+    """What a student typed (name, comment). "=HYPERLINK(...)" would run as a formula when the file
+    is opened in Excel. Not for ids, which may start with "-"."""
+    if text[:1] in ("=", "+", "-", "@", "\t", "\r"):
+        return "'" + text
+    return text
+
+
 def _to_csv(header, rows):
     out = io.StringIO()
     writer = csv.writer(out)
@@ -179,10 +188,28 @@ def _to_csv(header, rows):
     return out.getvalue()
 
 
+def _wib(iso):
+    """'2026-10-24T07:15:31+00:00' -> '2026-10-24 14:15' in Western Indonesia time."""
+    at = datetime.fromisoformat(iso).astimezone(timezone(timedelta(hours=7)))
+    return at.strftime("%Y-%m-%d %H:%M")
+
+
+def export_feedback_for_admin(store):
+    """CSV for the admin page: every feedback with who gave it. Starts with a BOM so Excel reads
+    the text as UTF-8."""
+    rows = []
+    for f in store.all_feedback_with_users():
+        top = (f["summary"].get("top") or [{}])[0]
+        rows.append([_wib(f["created_at"]), _typed(f["name"]), _typed(f["email"]), f["summary"]["interest"],
+                     top.get("title", ""), top.get("match", ""), f["relevance"], f["ease"], _typed(f["comment"])])
+    return "﻿" + _to_csv(["Tanggal (WIB)", "Nama", "Email", "Minat terkuat", "Rekomendasi teratas",
+                               "Kecocokan (%)", "Relevansi (1-5)", "Kemudahan (1-5)", "Komentar"], rows)
+
+
 def export_feedback(store):
     """CSV text with the feedback students gave on their results. No names or emails."""
     rows = [[f["result_id"], f["created_at"], f["summary"]["interest"],
              f["summary"]["top"][0]["title"], f["summary"]["top"][0]["match"],
-             f["relevance"], f["ease"], f["comment"]] for f in store.all_result_feedback()]
+             f["relevance"], f["ease"], _typed(f["comment"])] for f in store.all_result_feedback()]
     return _to_csv(["result_id", "created_at", "strongest_interest", "top1", "top1_match",
                     "relevance", "ease", "comment"], rows)

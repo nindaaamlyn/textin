@@ -1,5 +1,7 @@
 # Yang dibutuhkan situs (FastAPI). Harus sama dengan daftar di pyproject.toml, yang dipakai Vercel.
-numpy
-fastapi
-uvicorn
-psycopg[binary]
+# Versi dikunci sampai minor (~=) supaya deploy tidak tiba-tiba memasang versi besar baru yang belum diuji;
+# numpy dibiarkan naik dalam 2.x agar tetap ada paket jadi untuk versi Python yang dipakai Vercel.
+numpy>=2.2.6,<3
+fastapi~=0.162.0
+uvicorn~=0.54.0
+psycopg[binary]~=3.3.6

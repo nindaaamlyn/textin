@@ -32,6 +32,18 @@ TABLES = [
         created_at  TEXT NOT NULL,
         expires_at  TEXT NOT NULL
     )""",
+    """CREATE TABLE IF NOT EXISTS password_resets (
+        token_hash  TEXT PRIMARY KEY,
+        user_id     TEXT NOT NULL REFERENCES users(id),
+        created_at  TEXT NOT NULL,
+        expires_at  TEXT NOT NULL
+    )""",
+    """CREATE TABLE IF NOT EXISTS attempts (
+        kind  TEXT NOT NULL,
+        key   TEXT NOT NULL,
+        at    TEXT NOT NULL
+    )""",
+    "CREATE INDEX IF NOT EXISTS attempts_by_key ON attempts (kind, key, at)",
     """CREATE TABLE IF NOT EXISTS results (
         id            TEXT PRIMARY KEY,
         user_id       TEXT NOT NULL REFERENCES users(id),
@@ -163,6 +175,61 @@ class Store:
 
     def delete_login(self, token_hash):
         self._run("DELETE FROM logins WHERE token_hash = ?", (token_hash,))
+
+    def get_user(self, user_id):
+        return self._run("SELECT id, name, email FROM users WHERE id = ?", (user_id,), "one")
+
+    def set_password(self, user_id, password_hash, keep_login=None):
+        """Replace the password, end every login of this user but `keep_login` (a token hash), and
+        cancel any reset link still waiting."""
+        self._run("UPDATE users SET password_hash = ? WHERE id = ?", (password_hash, user_id))
+        self._run("DELETE FROM logins WHERE user_id = ? AND token_hash != ?", (user_id, keep_login or ""))
+        self._run("DELETE FROM password_resets WHERE user_id = ?", (user_id,))
+
+    # ---- "Lupa password": a link sent by email
+    def add_password_reset(self, user_id, token_hash, expires_at):
+        """Only the newest link of a user works."""
+        self._run("DELETE FROM password_resets WHERE expires_at < ? OR user_id = ?", (_now(), user_id))
+        self._run("INSERT INTO password_resets (token_hash, user_id, created_at, expires_at) VALUES (?, ?, ?, ?)",
+                  (token_hash, user_id, _now(), expires_at))
+
+    def get_password_reset_user(self, token_hash):
+        """The user a reset link is for, or None when it is unknown, used or expired."""
+        return self._run("SELECT users.id, users.name, users.email FROM password_resets p "
+                         "JOIN users ON users.id = p.user_id WHERE p.token_hash = ? AND p.expires_at > ?",
+                         (token_hash, _now()), "one")
+
+    # ---- attempts counted against a limit (wrong passwords, reset emails). Kept here rather than in
+    # memory, because a hosted site runs on several servers that restart often.
+    def count_attempts(self, kind, key, since):
+        row = self._run("SELECT COUNT(*) AS n FROM attempts WHERE kind = ? AND key = ? AND at > ?",
+                        (kind, key, since), "one")
+        return int(row["n"])
+
+    def add_attempt(self, kind, key, forget_before):
+        self._run("DELETE FROM attempts WHERE at < ?", (forget_before,))   # tidy up while we are here
+        self._run("INSERT INTO attempts (kind, key, at) VALUES (?, ?, ?)", (kind, key, _now()))
+
+    def clear_attempts(self, kind, key):
+        self._run("DELETE FROM attempts WHERE kind = ? AND key = ?", (kind, key))
+
+    # ---- what the admin page lists
+    def all_users(self):
+        """Newest first: [{id, name, email, created_at, tests, last_test}]."""
+        rows = self._run("SELECT u.id, u.name, u.email, u.created_at, COUNT(r.id) AS tests, "
+                         "MAX(r.created_at) AS last_test FROM users u LEFT JOIN results r ON r.user_id = u.id "
+                         "GROUP BY u.id, u.name, u.email, u.created_at ORDER BY u.created_at DESC, u.id", fetch="all")
+        return [{"id": r["id"], "name": r["name"], "email": r["email"], "created_at": r["created_at"],
+                 "tests": int(r["tests"]), "last_test": r["last_test"]} for r in rows]
+
+    def all_feedback_with_users(self):
+        """Every feedback with who gave it and the result it is about, newest first."""
+        rows = self._run("SELECT f.result_id, f.created_at, f.relevance, f.ease, f.comment, r.summary, "
+                         "u.name, u.email FROM result_feedback f JOIN results r ON r.id = f.result_id "
+                         "JOIN users u ON u.id = r.user_id ORDER BY f.created_at DESC, f.result_id", fetch="all")
+        return [{"result_id": r["result_id"], "created_at": r["created_at"], "relevance": r["relevance"],
+                 "ease": r["ease"], "comment": r["comment"] or "", "name": r["name"], "email": r["email"],
+                 "summary": json.loads(r["summary"])} for r in rows]
 
     # ---- results kept per account (Riwayat)
     def add_result(self, user_id, max_job_zone, answers, summary):

@@ -33,13 +33,11 @@ class WebTest(unittest.TestCase):
         os.environ["CRS_ADMIN_TOKEN"] = "rahasia"
         os.environ.pop("DATABASE_URL", None)
         import web.app as web_app
-        from crs import accounts
-        web_app._store = None
-        accounts.clear_failures()
+        web_app._store = None                  # a fresh database, so no attempts are left from another test
         self.client = TestClient(web_app.app)
 
     def tearDown(self):
-        for name in ("CRS_DB", "CRS_ADMIN_TOKEN"):
+        for name in ("CRS_DB", "CRS_ADMIN_TOKEN", "CRS_ADMIN_EMAIL", "CRS_ADMIN_PASSWORD"):
             os.environ.pop(name, None)
         self.tmp.cleanup()
 
@@ -134,7 +132,7 @@ class WebTest(unittest.TestCase):
 
         ok = self.client.post("/api/auth/login", json={"email": "Sari@example.com", "password": "rahasia-123"})
         self.assertEqual(ok.json()["name"], "Sari Dewi")
-        self.assertNotIn("Max-Age", ok.headers["set-cookie"])     # without "Ingat saya": ends with the browser
+        self.assertIn("Max-Age=43200", ok.headers["set-cookie"])  # without "Ingat saya": 12 hours, even across restarts
         kept = self.client.post("/api/auth/login",
                                 json={"email": "sari@example.com", "password": "rahasia-123", "remember": True})
         self.assertIn("Max-Age=2592000", kept.headers["set-cookie"])
@@ -241,6 +239,179 @@ class WebTest(unittest.TestCase):
 
         self.client.delete("/api/history")                        # removes the feedback with the results
         self.assertEqual(db.execute("SELECT COUNT(*) FROM result_feedback").fetchone()[0], 0)
+
+    def admin_client(self):
+        """Signed in as the admin account, which the server creates from ADMIN_EMAIL + ADMIN_PASSWORD."""
+        os.environ["CRS_ADMIN_EMAIL"] = "Admin@Example.com"
+        os.environ["CRS_ADMIN_PASSWORD"] = "admin-rahasia"
+        import web.app as web_app
+        web_app._store = None
+        admin = TestClient(web_app.app)
+        r = admin.post("/api/auth/login", json={"email": "admin@example.com", "password": "admin-rahasia"})
+        self.assertEqual(r.status_code, 200)
+        return admin
+
+    def test_admin_account_is_created_and_its_email_cannot_be_registered(self):
+        admin = self.admin_client()
+        self.assertTrue(admin.get("/api/state").json()["user"]["admin"])
+        taken = self.register("Penyusup", "ADMIN@example.com")
+        self.assertEqual(taken.status_code, 409)
+        self.register()
+        self.assertFalse(self.client.get("/api/state").json()["user"]["admin"])
+
+    def test_admin_pages_are_hidden_from_everyone_else(self):
+        self.admin_client()
+        import web.app as web_app
+        for client in (TestClient(web_app.app), self.client):     # signed out, then an ordinary student
+            if client is self.client:
+                self.register()
+            self.assertEqual(client.get("/api/admin/users").status_code, 404)
+            self.assertEqual(client.get("/api/admin/feedback").status_code, 404)
+            self.assertEqual(client.post("/api/admin/users/x/password", json={}).status_code, 404)
+
+    def test_admin_sees_users_and_feedback(self):
+        admin = self.admin_client()
+        self.register()
+        rid = self.client.post("/api/recommend", json={"answers": answers("Social")}).json()["result_id"]
+        self.client.post("/api/feedback", json={"result_id": rid, "relevance": 4, "ease": 5, "comment": "cocok"})
+        users = {u["email"]: u for u in admin.get("/api/admin/users").json()["users"]}
+        self.assertEqual(set(users), {"admin@example.com", "sari@example.com"})
+        self.assertEqual((users["sari@example.com"]["tests"], users["sari@example.com"]["admin"]), (1, False))
+        self.assertTrue(users["admin@example.com"]["admin"])
+        self.assertNotIn("password_hash", users["sari@example.com"])
+        fb, = admin.get("/api/admin/feedback").json()["feedback"]
+        self.assertEqual((fb["name"], fb["email"], fb["relevance"], fb["ease"], fb["comment"]),
+                         ("Sari Dewi", "sari@example.com", 4, 5, "cocok"))
+
+        self.assertEqual(self.client.get("/api/admin/feedback/export.csv").status_code, 404)   # a student
+        self.client.post("/api/feedback", json={"result_id": rid, "relevance": 4, "ease": 5,
+                                                "comment": "=HYPERLINK(\"http://x\")"})
+        export = admin.get("/api/admin/feedback/export.csv")
+        self.assertIn("attachment", export.headers["content-disposition"])
+        text = export.content.decode("utf-8")
+        self.assertTrue(text.startswith("﻿"))                   # Excel reads it as UTF-8
+        header, row = list(csv.reader(io.StringIO(text.lstrip("﻿"))))
+        self.assertEqual(header[:3], ["Tanggal (WIB)", "Nama", "Email"])
+        self.assertEqual(row[1:3], ["Sari Dewi", "sari@example.com"])
+        self.assertEqual(row[-1], "'=HYPERLINK(\"http://x\")")       # not run as a formula
+
+    def test_admin_reset_password_signs_the_student_out(self):
+        admin = self.admin_client()
+        self.register()
+        uid = self.client.get("/api/state").json()["user"]["id"]
+        self.assertEqual(admin.post("/api/admin/users/tidak-ada/password", json={}).status_code, 404)
+        issued = admin.post(f"/api/admin/users/{uid}/password", json={}).json()
+        self.assertEqual(issued["email"], "sari@example.com")
+        self.assertGreaterEqual(len(issued["password"]), 8)
+        self.assertIsNone(self.client.get("/api/state").json()["user"])            # signed out everywhere
+        old = {"email": "sari@example.com", "password": "rahasia-123"}
+        self.assertEqual(self.client.post("/api/auth/login", json=old).status_code, 401)
+        new = {"email": "sari@example.com", "password": issued["password"]}
+        self.assertEqual(self.client.post("/api/auth/login", json=new).status_code, 200)
+
+    def mailbox(self):
+        """Email switched on, with the messages caught here instead of sent."""
+        from unittest import mock
+        from crs import mailer
+        sent = []
+        os.environ["CRS_SITE_URL"] = "https://texin.example/"
+        self.addCleanup(os.environ.pop, "CRS_SITE_URL", None)
+        patches = [mock.patch.object(mailer, "configured", return_value=True),
+                   mock.patch.object(mailer, "send", side_effect=lambda to, subject, text: sent.append((to, text)))]
+        for p in patches:
+            p.start()
+            self.addCleanup(p.stop)
+        return sent
+
+    def test_forgot_password_is_off_without_email_settings(self):
+        self.assertFalse(self.client.get("/api/config").json()["password_email"])
+        self.assertEqual(self.client.post("/api/auth/forgot", json={"email": "sari@example.com"}).status_code, 503)
+
+    def test_forgot_password_sends_a_link_that_works_once(self):
+        sent = self.mailbox()
+        self.assertTrue(self.client.get("/api/config").json()["password_email"])
+        self.register()
+        unknown = self.client.post("/api/auth/forgot", json={"email": "tidak@ada.com"})
+        known = self.client.post("/api/auth/forgot", json={"email": "Sari@example.com"})
+        self.assertEqual(unknown.json(), known.json())             # does not reveal which emails exist
+        self.assertEqual([to for to, _ in sent], ["sari@example.com"])
+        self.assertIn("https://texin.example/#/reset/", sent[0][1])
+        token = re.search(r"#/reset/(\S+)", sent[0][1]).group(1)
+        db = sqlite3.connect(self.db)
+        self.assertNotEqual(db.execute("SELECT token_hash FROM password_resets").fetchone()[0], token)   # only its hash
+
+        self.assertEqual(self.client.post("/api/auth/reset", json={"token": token, "password": "pendek"}).status_code, 422)
+        self.assertEqual(self.client.post("/api/auth/reset", json={"token": "palsu", "password": "baru-sekali-1"}).status_code, 400)
+        self.assertEqual(self.client.post("/api/auth/reset", json={"token": token, "password": "baru-sekali-1"}).json(), {"ok": True})
+        self.assertIsNone(self.client.get("/api/state").json()["user"])            # signed out everywhere
+        self.assertEqual(self.client.post("/api/auth/reset", json={"token": token, "password": "lagi-lagi-12"}).status_code, 400)
+        old = {"email": "sari@example.com", "password": "rahasia-123"}
+        self.assertEqual(self.client.post("/api/auth/login", json=old).status_code, 401)
+        new = {"email": "sari@example.com", "password": "baru-sekali-1"}
+        self.assertEqual(self.client.post("/api/auth/login", json=new).status_code, 200)
+
+    def test_only_the_newest_reset_link_works_and_requests_are_limited(self):
+        sent = self.mailbox()
+        self.register()
+        codes = [self.client.post("/api/auth/forgot", json={"email": "sari@example.com"}).status_code for _ in range(4)]
+        self.assertEqual(codes, [200, 200, 200, 429])
+        first, last = (re.search(r"#/reset/(\S+)", text).group(1) for _, text in (sent[0], sent[-1]))
+        self.assertEqual(self.client.post("/api/auth/reset", json={"token": first, "password": "baru-sekali-1"}).status_code, 400)
+        self.assertEqual(self.client.post("/api/auth/reset", json={"token": last, "password": "baru-sekali-1"}).status_code, 200)
+
+    def test_change_password_keeps_this_device_and_signs_out_the_others(self):
+        self.register()
+        import web.app as web_app
+        phone = TestClient(web_app.app)
+        phone.post("/api/auth/login", json={"email": "sari@example.com", "password": "rahasia-123"})
+        self.assertEqual(TestClient(web_app.app).post("/api/auth/password",
+                                                      json={"current": "rahasia-123", "password": "baru-sekali-1"}).status_code, 401)
+        wrong = self.client.post("/api/auth/password", json={"current": "salah-sekali", "password": "baru-sekali-1"})
+        self.assertEqual(wrong.status_code, 400)
+        ok = self.client.post("/api/auth/password", json={"current": "rahasia-123", "password": "baru-sekali-1"})
+        self.assertEqual(ok.json(), {"ok": True})
+        self.assertIsNotNone(self.client.get("/api/state").json()["user"])
+        self.assertIsNone(phone.get("/api/state").json()["user"])
+        new = {"email": "sari@example.com", "password": "baru-sekali-1"}
+        self.assertEqual(phone.post("/api/auth/login", json=new).status_code, 200)
+
+    def test_reset_link_never_takes_its_address_from_the_request(self):
+        sent = self.mailbox()
+        os.environ.pop("CRS_SITE_URL")                              # forgotten on the host
+        self.register()
+        self.assertFalse(self.client.get("/api/config").json()["password_email"])
+        forged = self.client.post("/api/auth/forgot", json={"email": "sari@example.com"},
+                                  headers={"host": "penipu.example"})
+        self.assertEqual(forged.status_code, 503)
+        self.assertEqual(sent, [])
+
+    def test_limits_hold_across_servers(self):
+        """On Vercel each request may reach another server; the count lives in the database."""
+        self.register()
+        self.client.post("/api/auth/logout")
+        import web.app as web_app
+        body = {"email": "sari@example.com", "password": "salah-sekali"}
+        for _ in range(10):
+            web_app._store = None                                    # as if a new server answered
+            TestClient(web_app.app).post("/api/auth/login", json=body)
+        web_app._store = None
+        right = {"email": "sari@example.com", "password": "rahasia-123"}
+        self.assertEqual(TestClient(web_app.app).post("/api/auth/login", json=right).status_code, 429)
+
+    def test_security_headers(self):
+        for path in ("/", "/static/js/main.js", "/api/config"):
+            headers = self.client.get(path).headers
+            self.assertEqual(headers["x-frame-options"], "DENY", path)
+            self.assertEqual(headers["x-content-type-options"], "nosniff", path)
+            self.assertIn("frame-ancestors 'none'", headers["content-security-policy"], path)
+            self.assertIn("script-src 'self'", headers["content-security-policy"], path)
+        self.assertEqual(self.client.get("/api/config").headers["cache-control"], "no-store")
+
+    def test_nothing_private_is_served(self):
+        for path in ("/docs", "/redoc", "/openapi.json", "/.env", "/.env.example", "/README.md",
+                     "/web/app.py", "/data/onet_ratings.csv", "/data/crs.sqlite3",
+                     "/static/../app.py", "/static/..%2fapp.py", "/static/%2e%2e/%2e%2e/.env"):
+            self.assertIn(self.client.get(path).status_code, (404, 400), path)
 
     def test_page_and_assets_are_served_without_the_wrong_algorithm_name(self):
         page = self.client.get("/")

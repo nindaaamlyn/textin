@@ -8,15 +8,16 @@ import hashlib
 import hmac
 import re
 import secrets
-import time
 from datetime import datetime, timedelta, timezone
 
 SCRYPT_N, SCRYPT_R, SCRYPT_P = 2 ** 14, 8, 1
 MIN_PASSWORD = 8
-LOGIN_DAYS = 30            # with "Ingat saya"; without it the cookie ends with the browser session
+LOGIN_DAYS = 30            # with "Ingat saya"
+SHORT_LOGIN_HOURS = 12     # without it; the cookie still survives closing the browser
 MAX_FAILURES, FAILURE_WINDOW = 10, 15 * 60   # wrong passwords allowed per email, per 15 minutes
+MAX_RESET_EMAILS = 3       # reset links sent per email, per 15 minutes: not a way to flood someone's inbox
+RESET_MINUTES = 30         # a reset link works this long, and once
 _EMAIL = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
-_failures = {}             # email -> [time of each recent wrong password]
 
 
 def clean_email(email):
@@ -52,6 +53,14 @@ def check_login(user, password):
     return verify_password(password, user["password_hash"] if user else _DUMMY_HASH) and user is not None
 
 
+_READABLE = "abcdefghjkmnpqrstuvwxyz23456789"   # no 0/o, 1/l/i: read out or typed from a screen
+
+
+def temporary_password(length=10):
+    """A new password the admin hands to a student who forgot theirs."""
+    return "".join(secrets.choice(_READABLE) for _ in range(length))
+
+
 def new_token():
     """(token for the cookie, its hash for the database)."""
     token = secrets.token_urlsafe(32)
@@ -62,27 +71,39 @@ def token_hash(token):
     return hashlib.sha256(token.encode()).hexdigest()
 
 
+def login_life(remember):
+    return timedelta(days=LOGIN_DAYS) if remember else timedelta(hours=SHORT_LOGIN_HOURS)
+
+
 def expiry(remember):
     """ISO time after which a login stops working."""
-    life = timedelta(days=LOGIN_DAYS) if remember else timedelta(hours=12)
-    return (datetime.now(timezone.utc) + life).isoformat(timespec="seconds")
+    return (datetime.now(timezone.utc) + login_life(remember)).isoformat(timespec="seconds")
 
 
-def too_many_failures(email):
-    recent = [t for t in _failures.get(email, []) if time.time() - t < FAILURE_WINDOW]
-    _failures[email] = recent
-    return len(recent) >= MAX_FAILURES
+def reset_expiry():
+    return (datetime.now(timezone.utc) + timedelta(minutes=RESET_MINUTES)).isoformat(timespec="seconds")
 
 
-def record_failure(email):
-    if len(_failures) > 10_000:   # do not let a flood of made-up emails fill the memory
-        for key in [k for k, times in _failures.items() if time.time() - times[-1] >= FAILURE_WINDOW]:
-            del _failures[key]
-    _failures.setdefault(email, []).append(time.time())
+# The limits are counted in the database (`db` is a crs.storage.Store), so they hold on every server.
+def _window_start():
+    return (datetime.now(timezone.utc) - timedelta(seconds=FAILURE_WINDOW)).isoformat(timespec="seconds")
 
 
-def clear_failures(email=None):
-    if email is None:
-        _failures.clear()
-    else:
-        _failures.pop(email, None)
+def too_many_failures(db, email):
+    return db.count_attempts("password", email, _window_start()) >= MAX_FAILURES
+
+
+def record_failure(db, email):
+    db.add_attempt("password", email, _window_start())
+
+
+def clear_failures(db, email):
+    db.clear_attempts("password", email)
+
+
+def too_many_reset_emails(db, email):
+    return db.count_attempts("reset-email", email, _window_start()) >= MAX_RESET_EMAILS
+
+
+def record_reset_email(db, email):
+    db.add_attempt("reset-email", email, _window_start())

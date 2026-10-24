@@ -4,29 +4,31 @@ import { S, CONFIG, NEEDS_RESULT, answered, hasResult, setUser } from "../state.
 import { api } from "../api.js";
 import { go } from "../router.js";
 
-export const footer = () => `<footer class="border-t border-slate-100 px-5 py-8 text-center text-xs leading-relaxed text-mute">
+export const footer = () => `<footer class="print:hidden border-t border-slate-100 px-5 py-8 text-center text-xs leading-relaxed text-mute">
   <p class="mx-auto max-w-3xl">${h(CONFIG.attribution)}</p></footer>`;
 
 const NAV = [["dasbor", "Beranda", "home"], ["tes", "Tes Minat Karier", "quiz"], ["hasil", "Hasil Rekomendasi", "star"],
              ["jaringan", "Jaringan Karier", "graph"], ["feedback", "Feedback", "chat"], ["riwayat", "Riwayat", "clock"]];
 
 export function appShell(active, content) {
-  const items = NAV.map(([route, label, ic]) => {
+  const nav = S.user.admin ? [["admin", "Admin", "shield"]] : NAV; // the student pages mean nothing to the admin
+  const items = nav.map(([route, label, ic]) => {
     const locked = NEEDS_RESULT.includes(route) && !hasResult();
     return `<button class="nav-item ${active === route ? "active" : ""} ${locked ? "locked" : ""}" data-nav="${route}">${icon(ic)}${label}</button>`;
   }).join("");
   const initial = h((S.user.name || "P").charAt(0).toUpperCase());
   return `<div class="min-h-screen bg-slate-50 lg:flex">
-    <aside id="side" class="fixed inset-y-0 left-0 z-40 flex w-64 -translate-x-full flex-col gap-1 overflow-y-auto border-r border-slate-200 bg-white p-4 transition-transform lg:sticky lg:top-0 lg:h-screen lg:shrink-0 lg:translate-x-0">
-      <div class="mb-5 px-1">${logo("dasbor")}</div>
+    <aside id="side" class="print:hidden fixed inset-y-0 left-0 z-40 flex w-64 -translate-x-full flex-col gap-1 overflow-y-auto border-r border-slate-200 bg-white p-4 transition-transform lg:sticky lg:top-0 lg:h-screen lg:shrink-0 lg:translate-x-0">
+      <div class="mb-5 px-1">${logo(S.user.admin ? "admin" : "dasbor")}</div>
       ${items}
-      <div class="mt-auto border-t border-slate-100 pt-3">
+      <div class="mt-auto space-y-1 border-t border-slate-100 pt-3">
+        <button class="nav-item ${active === "akun" ? "active" : ""}" data-nav="akun">${icon("lock")}Ubah Password</button>
         <button class="nav-item" data-act="logout">${icon("out")}Keluar</button>
       </div>
     </aside>
     <div id="shade" class="fixed inset-0 z-30 hidden bg-ink/40 lg:hidden" data-act="menu"></div>
     <div class="flex min-w-0 flex-1 flex-col">
-      <header class="sticky top-0 z-20 flex items-center justify-between gap-3 border-b border-slate-200 bg-white/90 px-4 py-3 backdrop-blur lg:px-8">
+      <header class="print:hidden sticky top-0 z-20 flex items-center justify-between gap-3 border-b border-slate-200 bg-white/90 px-4 py-3 backdrop-blur lg:px-8">
         <button class="rounded-lg p-2 text-mute hover:bg-brand-50 lg:hidden" data-act="menu" aria-label="Buka menu">${icon("menu")}</button>
         <span class="hidden text-sm text-mute lg:block">Find your career</span>
         <div class="flex items-center gap-2.5">
@@ -34,7 +36,7 @@ export function appShell(active, content) {
           <span class="max-w-40 truncate text-sm font-semibold">${h(S.user.name)}</span>
         </div>
       </header>
-      <main data-page class="mx-auto w-full max-w-4xl flex-1 px-4 py-6 lg:px-8 lg:py-8">${content}</main>
+      <main data-page class="mx-auto w-full flex-1 ${active === "admin" ? "px-3 py-5 lg:px-5 lg:py-6 print:p-0" : "max-w-4xl px-4 py-6 lg:px-8 lg:py-8"}">${content}</main>
       ${footer()}
     </div>
   </div>`;

@@ -13,6 +13,7 @@
      data-pick="code"     selects a career in the graph  data-star="x:n"    star rating
      data-scroll="id"     scrolls the landing page       data-open="id"    opens an earlier result
      data-peek="id"       shows or hides a password
+     data-section="key"   admin page tab             data-reset="id"   new password for a user
            <form data-form="name">  runs forms.name() */
 import {
   S,
@@ -26,7 +27,7 @@ import {
 } from "./state.js";
 import { go, render, onRender, currentRoute } from "./router.js";
 import { api, onUnauthorized } from "./api.js";
-import { toast } from "./components/ui.js";
+import { toast, whileBusy } from "./components/ui.js";
 import { applyState } from "./sync.js";
 import * as shell from "./components/shell.js";
 import * as landing from "./views/landing.js";
@@ -37,6 +38,8 @@ import * as results from "./views/results.js";
 import * as network from "./views/network.js";
 import * as feedback from "./views/feedback.js";
 import * as history from "./views/history.js";
+import * as admin from "./views/admin.js";
+import * as account from "./views/account.js";
 
 const app = document.getElementById("app");
 
@@ -44,6 +47,9 @@ const VIEWS = {
   "": landing.viewLanding,
   masuk: auth.viewMasuk,
   daftar: auth.viewDaftar,
+  lupa: auth.viewLupa,
+  reset: auth.viewReset,
+  akun: account.viewAkun,
   dasbor: viewDasbor,
   tes: quiz.viewTes,
   kuis: quiz.viewKuis,
@@ -54,14 +60,18 @@ const VIEWS = {
   jaringan: network.viewJaringan,
   feedback: feedback.viewFeedback,
   riwayat: history.viewRiwayat,
+  admin: admin.viewAdmin,
 };
-const PUBLIC = ["", "masuk", "daftar"];
+const PUBLIC = ["", "masuk", "daftar", "lupa", "reset"];
+const ADMIN_PAGES = ["admin", "akun"];
 const actions = {
   ...shell.actions,
   ...quiz.actions,
   ...history.actions,
+  ...admin.actions,
+  ...auth.actions,
 };
-const forms = { ...auth.forms, ...feedback.forms };
+const forms = { ...auth.forms, ...feedback.forms, ...account.forms };
 // data attribute -> what a click on it does
 const CLICKS = {
   act: (name) => actions[name](),
@@ -73,6 +83,8 @@ const CLICKS = {
   scroll: landing.onScroll,
   open: history.onOpen,
   peek: auth.onPeek,
+  section: admin.onSection,
+  reset: admin.onReset,
 };
 const CLICKABLE = Object.keys(CLICKS)
   .map((key) => `[data-${key}]`)
@@ -85,6 +97,9 @@ onRender(() => {
   const [route, arg] = currentRoute();
   if (!VIEWS[route]) return go(S.user ? "dasbor" : "");
   if (!PUBLIC.includes(route) && !S.user) return go("masuk");
+  if (route === "admin" && !S.user.admin) return go("dasbor");
+  if (S.user && S.user.admin && !ADMIN_PAGES.includes(route) && !PUBLIC.includes(route))
+    return go("admin", true); // the admin only has the admin page and Ubah Password
   if (NEEDS_RESULT.includes(route) && !hasResult()) return go("dasbor");
   if ((route === "ringkasan" || route === "analisis") && answered() < total())
     return go("tes", true);
@@ -105,9 +120,11 @@ onRender(() => {
 
 document.addEventListener("click", (event) => {
   const el = event.target.closest(CLICKABLE);
-  if (!el) return;
+  if (!el || el.hasAttribute("aria-busy")) return;
   const key = Object.keys(CLICKS).find((k) => el.dataset[k] !== undefined);
-  CLICKS[key](el.dataset[key], event);
+  const work = CLICKS[key](el.dataset[key], event);
+  // an action that waits on the server: its button stays disabled, with a spinner, until it is done
+  if (work && typeof work.then === "function") whileBusy(el, work).catch(() => {});
 });
 
 let submitting = false;
@@ -118,7 +135,7 @@ document.addEventListener("submit", async (event) => {
   if (!handler || submitting) return; // a second click while the first is still on its way
   submitting = true;
   try {
-    await handler();
+    await whileBusy(event.target.querySelector("button:not([type=button])"), handler());
   } finally {
     submitting = false;
   }
@@ -126,6 +143,10 @@ document.addEventListener("submit", async (event) => {
 
 document.addEventListener("change", (event) => {
   if (event.target.id === "centre") network.onCentre(event.target.value);
+});
+
+document.addEventListener("input", (event) => {
+  if (event.target.id === "admin-search") admin.onSearch(event.target.value);
 });
 
 document.addEventListener("keydown", (event) => {
