@@ -36,10 +36,23 @@ class WebTest(unittest.TestCase):
         web_app._store = None                  # a fresh database, so no attempts are left from another test
         self.client = TestClient(web_app.app)
 
+
+
     def tearDown(self):
-        for name in ("CRS_DB", "CRS_ADMIN_TOKEN", "CRS_ADMIN_EMAIL", "CRS_ADMIN_PASSWORD"):
+        for name in (
+            "CRS_DB",
+            "CRS_ADMIN_TOKEN",
+            "CRS_ADMIN_EMAIL",
+            "CRS_ADMIN_PASSWORD"
+        ):
             os.environ.pop(name, None)
+
+        # Tutup TestClient sebelum menghapus database sementara
+        self.client.close()
+
         self.tmp.cleanup()
+
+
 
     def test_config_has_the_sixty_items(self):
         c = self.client.get("/api/config").json()
@@ -109,7 +122,8 @@ class WebTest(unittest.TestCase):
         self.assertTrue(stored.startswith("scrypt$"))
         self.assertNotIn("rahasia-123", stored)
         token = self.client.cookies["texin_session"]
-        self.assertNotEqual(db.execute("SELECT token_hash FROM logins").fetchone()[0], token)   # only its hash
+        self.assertNotEqual(db.execute("SELECT token_hash FROM logins").fetchone()[0], token)
+        db.close()
 
     def test_register_rejects_bad_input_and_duplicate_email(self):
         self.assertEqual(self.register(password="pendek").status_code, 422)
@@ -182,10 +196,16 @@ class WebTest(unittest.TestCase):
         self.assertEqual(other.delete("/api/history").json(), {"ok": True})
         self.assertEqual(len(self.client.get("/api/history").json()["results"]), 2)   # untouched by the other user
 
+
         self.client.delete("/api/history")
-        self.assertEqual(self.client.get("/api/history").json(), {"results": []})
+
+        self.assertEqual(
+            self.client.get("/api/history").json(),
+            {"results": []}
+        )
 
     def test_state_follows_the_account_to_another_device(self):
+
         self.assertEqual(self.client.get("/api/state").json(), {"user": None, "progress": None, "result": None})
         self.assertEqual(self.client.put("/api/progress", json={"answers": {"1": 3}}).status_code, 401)
         self.register()
@@ -212,46 +232,143 @@ class WebTest(unittest.TestCase):
         self.client.put("/api/progress", json={"answers": {}})    # started over
         self.assertIsNone(self.client.get("/api/state").json()["progress"])
 
+
     def test_feedback_is_kept_with_the_students_own_result(self):
         self.register()
-        rid = self.client.post("/api/recommend", json={"answers": answers("Social")}).json()["result_id"]
+
+        rid = self.client.post(
+            "/api/recommend",
+            json={"answers": answers("Social")}
+        ).json()["result_id"]
+
         import web.app as web_app
+
         other = TestClient(web_app.app)
-        self.register("Budi", "budi@example.com", client=other)
-        body = {"result_id": rid, "relevance": 4, "ease": 5, "comment": " cocok "}
-        self.assertEqual(TestClient(web_app.app).post("/api/feedback", json=body).status_code, 401)   # signed out
-        self.assertEqual(other.post("/api/feedback", json=body).status_code, 404)        # not Budi's result
-        self.assertEqual(self.client.post("/api/feedback", json=body).json(), {"saved": True})
-        self.client.post("/api/feedback", json={**body, "relevance": 2})                 # replaces
-        db = sqlite3.connect(self.db)
-        self.assertEqual(db.execute("SELECT result_id, relevance, ease, comment FROM result_feedback").fetchall(),
-                         [(rid, 2, 5, "cocok")])
-        self.assertTrue(self.client.get("/api/state").json()["result"]["feedback_given"])
-        self.assertTrue(self.client.get(f"/api/history/{rid}").json()["feedback_given"])
+        anonymous = TestClient(web_app.app)
 
-        self.assertEqual(self.client.get("/api/admin/feedback.csv?token=salah").status_code, 404)
-        text = self.client.get("/api/admin/feedback.csv?token=rahasia").text
-        rows = list(csv.reader(io.StringIO(text)))
-        self.assertEqual(len(rows), 2)
-        self.assertEqual(rows[1][-3:], ["2", "5", "cocok"])
-        self.assertNotIn("sari@example.com", text)
-        self.assertNotIn("Sari Dewi", text)
+        try:
+            self.register(
+                "Budi",
+                "budi@example.com",
+                client=other
+            )
 
-        self.client.delete("/api/history")                        # removes the feedback with the results
-        self.assertEqual(db.execute("SELECT COUNT(*) FROM result_feedback").fetchone()[0], 0)
+            body = {
+                "result_id": rid,
+                "relevance": 4,
+                "ease": 5,
+                "comment": " cocok "
+            }
+
+            # Signed out
+            self.assertEqual(
+                anonymous.post("/api/feedback", json=body).status_code,
+                401
+            )
+
+            # Bukan pemilik hasil
+            self.assertEqual(
+                other.post("/api/feedback", json=body).status_code,
+                404
+            )
+
+            # Pemilik hasil
+            self.assertEqual(
+                self.client.post("/api/feedback", json=body).json(),
+                {"saved": True}
+            )
+
+            # Mengganti feedback sebelumnya
+            self.client.post(
+                "/api/feedback",
+                json={**body, "relevance": 2}
+            )
+
+            db = sqlite3.connect(self.db)
+
+            try:
+                self.assertEqual(
+                    db.execute(
+                        "SELECT result_id, relevance, ease, comment "
+                        "FROM result_feedback"
+                    ).fetchall(),
+                    [(rid, 2, 5, "cocok")]
+                )
+
+                self.assertTrue(
+                    self.client.get("/api/state").json()
+                    ["result"]["feedback_given"]
+                )
+
+                self.assertTrue(
+                    self.client.get(
+                        f"/api/history/{rid}"
+                    ).json()["feedback_given"]
+                )
+
+                self.assertEqual(
+                    self.client.get(
+                        "/api/admin/feedback.csv?token=salah"
+                    ).status_code,
+                    404
+                )
+
+                text = self.client.get(
+                    "/api/admin/feedback.csv?token=rahasia"
+                ).text
+
+                rows = list(csv.reader(io.StringIO(text)))
+
+                self.assertEqual(len(rows), 2)
+                self.assertEqual(
+                    rows[1][-3:],
+                    ["2", "5", "cocok"]
+                )
+
+                self.assertNotIn("sari@example.com", text)
+                self.assertNotIn("Sari Dewi", text)
+
+                # Menghapus hasil sekaligus feedback
+                self.client.delete("/api/history")
+
+                self.assertEqual(
+                    db.execute(
+                        "SELECT COUNT(*) FROM result_feedback"
+                    ).fetchone()[0],
+                    0
+                )
+
+            finally:
+                db.close()
+
+        finally:
+            # Menutup seluruh TestClient tambahan
+            anonymous.close()
+            other.close()
+
+
 
     def admin_client(self):
-        """Signed in as the admin account, which the server creates from ADMIN_EMAIL + ADMIN_PASSWORD."""
+        """Signed in as the admin account."""
         os.environ["CRS_ADMIN_EMAIL"] = "Admin@Example.com"
         os.environ["CRS_ADMIN_PASSWORD"] = "admin-rahasia"
         import web.app as web_app
         web_app._store = None
         admin = TestClient(web_app.app)
-        r = admin.post("/api/auth/login", json={"email": "admin@example.com", "password": "admin-rahasia"})
+        r = admin.post(
+            "/api/auth/login",
+            json={
+                "email": "admin@example.com",
+                "password": "admin-rahasia"
+
+            }
+        )
         self.assertEqual(r.status_code, 200)
         return admin
 
+
     def test_admin_account_is_created_and_its_email_cannot_be_registered(self):
+
         admin = self.admin_client()
         self.assertTrue(admin.get("/api/state").json()["user"]["admin"])
         taken = self.register("Penyusup", "ADMIN@example.com")
@@ -338,7 +455,8 @@ class WebTest(unittest.TestCase):
         self.assertIn("https://texin.example/#/reset/", sent[0][1])
         token = re.search(r"#/reset/(\S+)", sent[0][1]).group(1)
         db = sqlite3.connect(self.db)
-        self.assertNotEqual(db.execute("SELECT token_hash FROM password_resets").fetchone()[0], token)   # only its hash
+        self.assertNotEqual(db.execute("SELECT token_hash FROM password_resets").fetchone()[0], token)
+        db.close()
 
         self.assertEqual(self.client.post("/api/auth/reset", json={"token": token, "password": "pendek"}).status_code, 422)
         self.assertEqual(self.client.post("/api/auth/reset", json={"token": "palsu", "password": "baru-sekali-1"}).status_code, 400)

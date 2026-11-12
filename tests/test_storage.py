@@ -27,44 +27,53 @@ class StorageContract:
         self.assertEqual(store.get_user_by_email(email)["id"], uid)
         self.assertIsNone(store.get_user_by_email("tidak@ada.com"))
 
-        store.add_login(uid, "hash-baru", "2999-01-01T00:00:00+00:00")
-        store.add_login(uid, "hash-lama", "2000-01-01T00:00:00+00:00")
-        user = store.get_login_user("hash-baru")
+        prefix = secrets.token_hex(12)
+        active_hash, expired_hash = f"{prefix}-active", f"{prefix}-expired"
+        store.add_login(uid, active_hash, "2999-01-01T00:00:00+00:00")
+        store.add_login(uid, expired_hash, "2000-01-01T00:00:00+00:00")
+        user = store.get_login_user(active_hash)
         self.assertEqual((user["id"], user["name"], user["email"]), (uid, "Sari", email))
-        self.assertIsNone(store.get_login_user("hash-lama"))              # expired
+        self.assertIsNone(store.get_login_user(expired_hash))              # expired
         self.assertIsNone(store.get_login_user("tidak-ada"))
-        store.delete_login("hash-baru")
-        self.assertIsNone(store.get_login_user("hash-baru"))
+        store.delete_login(active_hash)
+        self.assertIsNone(store.get_login_user(active_hash))
 
     def test_new_password_ends_every_login(self):
         store = self.store
         uid, email = self.new_user()
-        store.add_login(uid, "hash-hp", "2999-01-01T00:00:00+00:00")
-        store.add_login(uid, "hash-laptop", "2999-01-01T00:00:00+00:00")
+        prefix = secrets.token_hex(12)
+        phone_hash, laptop_hash = f"{prefix}-phone", f"{prefix}-laptop"
+        keep_hash, other_hash = f"{prefix}-keep", f"{prefix}-other"
+        store.add_login(uid, phone_hash, "2999-01-01T00:00:00+00:00")
+        store.add_login(uid, laptop_hash, "2999-01-01T00:00:00+00:00")
         store.set_password(uid, "scrypt$baru")
         self.assertEqual(store.get_user_by_email(email)["password_hash"], "scrypt$baru")
-        self.assertIsNone(store.get_login_user("hash-hp"))
-        self.assertIsNone(store.get_login_user("hash-laptop"))
+        self.assertIsNone(store.get_login_user(phone_hash))
+        self.assertIsNone(store.get_login_user(laptop_hash))
         self.assertEqual(store.get_user(uid)["email"], email)
         self.assertIsNone(store.get_user("tidak-ada"))
 
-        store.add_login(uid, "hash-ini", "2999-01-01T00:00:00+00:00")
-        store.add_login(uid, "hash-lain", "2999-01-01T00:00:00+00:00")
-        store.set_password(uid, "scrypt$lagi", keep_login="hash-ini")
-        self.assertIsNotNone(store.get_login_user("hash-ini"))
-        self.assertIsNone(store.get_login_user("hash-lain"))
+        store.add_login(uid, keep_hash, "2999-01-01T00:00:00+00:00")
+        store.add_login(uid, other_hash, "2999-01-01T00:00:00+00:00")
+        store.set_password(uid, "scrypt$lagi", keep_login=keep_hash)
+        self.assertIsNotNone(store.get_login_user(keep_hash))
+        self.assertIsNone(store.get_login_user(other_hash))
 
     def test_reset_links_expire_are_replaced_and_used_up(self):
         store = self.store
         uid, email = self.new_user()
-        store.add_password_reset(uid, "link-lama", "2999-01-01T00:00:00+00:00")
-        store.add_password_reset(uid, "link-baru", "2999-01-01T00:00:00+00:00")
-        self.assertIsNone(store.get_password_reset_user("link-lama"))       # only the newest one works
-        self.assertEqual(store.get_password_reset_user("link-baru")["email"], email)
+        prefix = secrets.token_hex(12)
+        old_token, new_token, expired_token = (
+            f"{prefix}-old", f"{prefix}-new", f"{prefix}-expired"
+        )
+        store.add_password_reset(uid, old_token, "2999-01-01T00:00:00+00:00")
+        store.add_password_reset(uid, new_token, "2999-01-01T00:00:00+00:00")
+        self.assertIsNone(store.get_password_reset_user(old_token))       # only the newest one works
+        self.assertEqual(store.get_password_reset_user(new_token)["email"], email)
         store.set_password(uid, "scrypt$baru")
-        self.assertIsNone(store.get_password_reset_user("link-baru"))       # a new password uses it up
-        store.add_password_reset(uid, "link-basi", "2000-01-01T00:00:00+00:00")
-        self.assertIsNone(store.get_password_reset_user("link-basi"))       # expired
+        self.assertIsNone(store.get_password_reset_user(new_token))       # a new password uses it up
+        store.add_password_reset(uid, expired_token, "2000-01-01T00:00:00+00:00")
+        self.assertIsNone(store.get_password_reset_user(expired_token))   # expired
 
     def test_admin_lists_users_and_feedback(self):
         store = self.store
