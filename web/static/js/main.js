@@ -40,6 +40,7 @@ import * as feedback from "./views/feedback.js";
 import * as history from "./views/history.js";
 import * as admin from "./views/admin.js";
 import * as account from "./views/account.js";
+import { viewModifications } from "./views/modifications.js";
 
 const app = document.getElementById("app");
 
@@ -61,8 +62,9 @@ const VIEWS = {
   feedback: feedback.viewFeedback,
   riwayat: history.viewRiwayat,
   admin: admin.viewAdmin,
+  modifikasi: viewModifications,
 };
-const PUBLIC = ["", "masuk", "daftar", "lupa", "reset"];
+const PUBLIC = ["", "masuk", "daftar", "lupa", "reset", "modifikasi"];
 const ADMIN_PAGES = ["admin", "akun"];
 const actions = {
   ...shell.actions,
@@ -101,6 +103,7 @@ onRender(() => {
   if (S.user && S.user.admin && !ADMIN_PAGES.includes(route) && !PUBLIC.includes(route))
     return go("admin", true); // the admin only has the admin page and Ubah Password
   if (NEEDS_RESULT.includes(route) && !hasResult()) return go("dasbor");
+  if (["karier", "jaringan", "feedback"].includes(route) && !S.result?.cards?.length) return go("hasil");
   if ((route === "ringkasan" || route === "analisis") && answered() < total())
     return go("tes", true);
   if (route === "analisis" && hasResult()) return go("hasil", true); // already analysed

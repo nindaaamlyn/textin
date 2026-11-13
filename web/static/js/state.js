@@ -60,7 +60,7 @@ export const NEEDS_RESULT = ["hasil", "karier", "jaringan", "feedback"];
 export const answered = () => Object.keys(S.answers).length;
 export const total = () => CONFIG.items.length;
 export const hasResult = () =>
-  Boolean(S.result && S.result.cards && S.result.cards.length);
+  Boolean(S.result && !S.result.flat && Array.isArray(S.result.profile) && S.result.profile.length);
 export const typeLabel = (type) => {
   const t = CONFIG.types.find((x) => x.type === type);
   return `${t.label} (${t.nickname})`;

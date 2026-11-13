@@ -5,7 +5,8 @@ import { api } from "../api.js";
 import { go } from "../router.js";
 
 export const footer = () => `<footer class="print:hidden border-t border-slate-100 px-5 py-8 text-center text-xs leading-relaxed text-mute">
-  <p class="mx-auto max-w-3xl">${h(CONFIG.attribution)}</p></footer>`;
+  <p class="mx-auto max-w-3xl">${h(CONFIG.attribution)}</p>
+  <a href="#/modifikasi" class="mt-2 inline-block font-semibold text-brand-600 hover:underline">Modifikasi dan Penyangkalan</a></footer>`;
 
 const NAV = [["dasbor", "Beranda", "home"], ["tes", "Tes Minat Karier", "quiz"], ["hasil", "Hasil Rekomendasi", "star"],
              ["jaringan", "Jaringan Karier", "graph"], ["feedback", "Feedback", "chat"], ["riwayat", "Riwayat", "clock"]];
@@ -13,7 +14,8 @@ const NAV = [["dasbor", "Beranda", "home"], ["tes", "Tes Minat Karier", "quiz"],
 export function appShell(active, content) {
   const nav = S.user.admin ? [["admin", "Admin", "shield"]] : NAV; // the student pages mean nothing to the admin
   const items = nav.map(([route, label, ic]) => {
-    const locked = NEEDS_RESULT.includes(route) && !hasResult();
+    const needsCards = ["karier", "jaringan", "feedback"].includes(route) && !S.result?.cards?.length;
+    const locked = (NEEDS_RESULT.includes(route) && !hasResult()) || needsCards;
     return `<button class="nav-item ${active === route ? "active" : ""} ${locked ? "locked" : ""}" data-nav="${route}">${icon(ic)}${label}</button>`;
   }).join("");
   const initial = h((S.user.name || "P").charAt(0).toUpperCase());
@@ -76,6 +78,7 @@ export const actions = {
 
 /** A click on the side menu. Result pages stay closed until the test is finished. */
 export function onNav(route) {
-  if (NEEDS_RESULT.includes(route) && !hasResult()) toast("Selesaikan tes minat karier dulu.");
+  const needsCards = ["karier", "jaringan", "feedback"].includes(route) && !S.result?.cards?.length;
+  if ((NEEDS_RESULT.includes(route) && !hasResult()) || needsCards) toast("Selesaikan tes dan pastikan ada rekomendasi karier terlebih dahulu.");
   else go(route === "tes" && answered() && !hasResult() ? "kuis" : route);
 }

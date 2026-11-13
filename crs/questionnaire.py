@@ -4,16 +4,18 @@ Each item is a work activity. The student answers on a five-point scale
 (0 = sangat tidak suka ... 4 = sangat suka). The score of a RIASEC type is the sum of
 its 10 items, so every type ranges from 0 to 40.
 
-The Indonesian wording is an unvalidated translation made for this project. The O*NET Tools
-Developer License asks that adapted versions be validated for their audience before release:
+The Indonesian wording and response presentation are adaptations made for this project. This version
+has not undergone formal psychometric validation with Indonesian high-school students. The O*NET Tools
+Developer License requires validation of products incorporating the Tools; do not describe this version
+as a validated instrument. The public-facing modifications and disclaimers are at #/modifikasi:
 https://www.onetcenter.org/license_toolsdev.html
 
 Attribution required by that license:
     This application includes information from the O*NET Career Exploration Tools by the
     U.S. Department of Labor, Employment and Training Administration (USDOL/ETA). Used under
-    the O*NET Tools Developer License. O*NET(R) is a trademark of USDOL/ETA. The author has
-    modified all or some of this information. USDOL/ETA has not approved, endorsed, or tested
-    these modifications.
+    the O*NET Tools Developer License. O*NET® is a trademark of USDOL/ETA. The TEXIN project
+    team has modified all or some of this information. USDOL/ETA has not approved, endorsed,
+    or tested these modifications.
 """
 from dataclasses import dataclass
 

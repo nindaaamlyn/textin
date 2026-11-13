@@ -30,11 +30,9 @@ EDUCATION_PLANS = {
     "Sampai S2/S3": 5,
 }
 ATTRIBUTION = (
-    "Aplikasi ini memuat informasi dari O*NET 31.0 Database dan O*NET Career Exploration Tools oleh "
-    "U.S. Department of Labor, Employment and Training Administration (USDOL/ETA), digunakan di bawah "
-    "lisensi CC BY 4.0 dan O*NET Tools Developer License. O*NET® adalah merek dagang USDOL/ETA. "
-    "Pengembang aplikasi ini telah mengubah sebagian informasi tersebut. USDOL/ETA tidak menyetujui, "
-    "mendukung, atau menguji perubahan ini."
+    "TEXIN menggunakan data O*NET 31.0 Database dan materi O*NET Career Exploration Tools. "
+    "Atribusi, lisensi, uraian modifikasi, dan status validasi tersedia pada halaman "
+    "Modifikasi dan Penyangkalan."
 )
 
 @lru_cache(maxsize=1)
@@ -90,17 +88,42 @@ def interest_profile(totals):
 
 def match_percent(correlation):
     """"Kecocokan" shown to the student: the Pearson correlation between the student's six RIASEC
-    scores and the occupation's, as a percentage; negative correlations count as 0."""
+    scores and the occupation's, as a percentage. Non-positive correlations are not recommended."""
     return max(0, round(100 * float(correlation)))
 
 
+def ranked_occupation_indices(fit, codes, job_zones, max_job_zone=None):
+    """Return only positively correlated occupations, sorted deterministically.
+
+    Pearson values at or below 1e-12 are treated as zero to avoid ranking floating-point
+    noise as a meaningful positive match. Ties are resolved by ascending O*NET-SOC code.
+    """
+    scores = np.asarray(fit, dtype=float)
+    occupation_codes = np.asarray(codes, dtype=str)
+    zones = np.asarray(job_zones)
+    if not (scores.ndim == occupation_codes.ndim == zones.ndim == 1):
+        raise ValueError("fit, codes, dan job_zones harus berupa array satu dimensi")
+    if not (len(scores) == len(occupation_codes) == len(zones)):
+        raise ValueError("fit, codes, dan job_zones harus memiliki panjang yang sama")
+
+    eligible = np.isfinite(scores) & (scores > 1e-12)
+    if max_job_zone is not None:
+        eligible &= zones <= max_job_zone
+    indices = np.flatnonzero(eligible)
+    order = np.lexsort((occupation_codes[indices], -scores[indices]))
+    return indices[order].tolist()
+
+
 def recommend_by_interest(totals, max_job_zone=None, top_n=10):
-    """Content-based filtering: rank occupations by Pearson correlation with the student's RIASEC
-    scores (the method O*NET's own Interest Profiler uses). Returns result cards with a match."""
+    """Rank occupations by TEXIN's Pearson implementation.
+
+    Only positive correlations are recommended. This is a TEXIN result, not an official
+    O*NET score or a probability of succeeding in a job.
+    """
     rec = recommender()
     d = rec.data
     fit = rec.interest_fit(totals)
-    order = [i for i in np.argsort(-fit) if max_job_zone is None or d.job_zones[i] <= max_job_zone]
+    order = ranked_occupation_indices(fit, d.codes, d.job_zones, max_job_zone)
     cards = []
     for i in order[:top_n]:
         c = card(int(i))
@@ -155,7 +178,8 @@ def career_graph(code, limit=8):
 
 def recommendation(answers, max_job_zone=None, top_n=10):
     """Everything the result pages need from the 60 answers (item number -> 0..4).
-    A flat profile (six equal scores) has no correlation with anything, so it gets no cards."""
+    A flat profile (six equal scores) has no correlation with anything, so it gets no cards.
+    A non-flat profile with no positive eligible correlation also returns no cards."""
     try:
         totals = questionnaire.score(answers)
     except ValueError:

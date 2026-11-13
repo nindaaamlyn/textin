@@ -258,7 +258,7 @@ export async function runAnalysis() {
     S.feedbackSent = false;
     forgetHistory();
     save();
-    go(result.cards.length ? "hasil" : "ringkasan", true); // Back must not run the analysis again
+    go(result.flat ? "ringkasan" : "hasil", true); // A non-flat profile can have no positive match
   } catch (error) {
     toast(error.message);
     go("ringkasan");

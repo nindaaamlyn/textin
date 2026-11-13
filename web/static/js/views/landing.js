@@ -7,12 +7,12 @@ const FEATURES = [
   [
     "target",
     "Berbasis Minat",
-    "60 pertanyaan aktivitas kerja dari O*NET Interest Profiler, mengukur enam tipe minat RIASEC.",
+    "Adaptasi Bahasa Indonesia dari 60 aktivitas kerja O*NET Interest Profiler untuk mengukur enam tipe minat RIASEC. Status validasi dijelaskan pada halaman Modifikasi dan Penyangkalan.",
   ],
   [
     "spark",
     "Analisis Kecocokan",
-    "Profil minatmu dibandingkan dengan 878 profil pekerjaan O*NET memakai Pearson Correlation.",
+    "Profil minatmu dibandingkan dengan 878 profil pekerjaan O*NET memakai implementasi korelasi Pearson milik TEXIN.",
   ],
   [
     "graph",
@@ -34,7 +34,7 @@ const HOW = [
   [
     "spark",
     "Dapatkan rekomendasi",
-    "Profilmu dibandingkan dengan 878 profil pekerjaan. Sepuluh yang paling cocok muncul dengan persentase dan alasannya.",
+    "Profilmu dibandingkan dengan 878 profil pekerjaan. Pekerjaan dengan korelasi positif tertinggi ditampilkan dengan persentase dan alasannya.",
   ],
   [
     "graph",
@@ -67,7 +67,10 @@ const Header = () => `
       <a class="hover:text-brand-600" data-scroll="cara-kerja" href="#cara-kerja">Cara Kerja</a>
       <a class="hover:text-brand-600" data-scroll="karier" href="#karier">Karier</a>
     </nav>
-    <div class="flex items-center gap-2">${AccountButtons()}</div>
+    <div class="flex items-center gap-2">
+      <a href="#/modifikasi" class="hidden text-xs font-semibold text-mute hover:text-brand-600 sm:inline">Modifikasi dan Penyangkalan</a>
+      ${AccountButtons()}
+    </div>
   </div>
 </header>`;
 
@@ -80,6 +83,7 @@ const Hero = () => `
       <div class="mt-7 flex flex-wrap items-center gap-4">
         <a href="#/${startRoute()}" class="btn-primary px-6 py-3 text-base">Mulai Sekarang ${icon("arrow")}</a>
         <span class="text-sm text-mute">Gratis · sekitar 10–15 menit</span>
+        <a href="#/modifikasi" class="text-xs font-semibold text-brand-600 underline">Modifikasi dan Penyangkalan</a>
       </div>
     </div>
     <div class="relative mx-auto w-full max-w-md">
@@ -133,7 +137,7 @@ const HowItWorks = () => `
       </li>`,
       ).join("")}
     </ol>
-    <p class="mx-auto mt-10 max-w-2xl rounded-xl bg-slate-50 px-4 py-3 text-center text-xs leading-relaxed text-mute ring-1 ring-slate-200">Kecocokan dihitung dengan Pearson Correlation antara enam skor minatmu dan profil minat tiap pekerjaan di O*NET, cara yang juga dipakai O*NET Interest Profiler.</p>
+    <p class="mx-auto mt-10 max-w-2xl rounded-xl bg-slate-50 px-4 py-3 text-center text-xs leading-relaxed text-mute ring-1 ring-slate-200">TEXIN membandingkan enam skor minat dengan profil pekerjaan menggunakan implementasi korelasi Pearson milik TEXIN. Metode ini terinspirasi dari pendekatan profil minat O*NET, tetapi skor dan pemeringkatan yang ditampilkan bukan hasil resmi O*NET. <a href="#/modifikasi" class="font-semibold text-brand-600 underline">Pelajari adaptasi dan batas validasinya.</a></p>
   </div>
 </section>`;
 
@@ -141,7 +145,8 @@ const About = () => `
 <section id="tentang" class="scroll-mt-20 bg-slate-50">
   <div class="mx-auto max-w-6xl px-5 py-16">
     <h2 class="text-3xl font-extrabold">Tentang texin</h2>
-    <p class="mt-3 max-w-3xl leading-relaxed text-mute">texin membantu siswa SMA mengenali minat kariernya dan menjelajahi pekerjaan yang sejalan dengan minat itu. Pertanyaan dan data pekerjaannya berasal dari O*NET 31.0, basis data pekerjaan milik Departemen Tenaga Kerja Amerika Serikat. Hasilnya bahan eksplorasi, bukan keputusan atau tes psikologi resmi.</p>
+    <p class="mt-3 max-w-3xl leading-relaxed text-mute">TEXIN membantu siswa SMA mengenali minat karier dan menjelajahi pekerjaan yang sejalan dengan minat tersebut. Kuesioner merupakan adaptasi Bahasa Indonesia dari O*NET Interest Profiler Short Form, sedangkan profil pekerjaan menggunakan sebagian data O*NET 31.0. Adaptasi kuesioner belum divalidasi secara psikometrik pada populasi siswa Indonesia. Hasilnya hanya bahan eksplorasi, bukan keputusan atau tes psikologi resmi.</p>
+    <p class="mt-3 text-sm"><a href="#/modifikasi" class="font-semibold text-brand-600 underline">Baca Modifikasi dan Penyangkalan, termasuk sumber dan lisensi O*NET.</a></p>
     <h3 class="mt-8 font-bold">Enam tipe minat (RIASEC)</h3>
     <div class="mt-3 flex flex-wrap gap-2">${CONFIG.types.map((t) => `<span class="chip bg-white ring-1 ring-brand-100">${h(t.label)} · ${h(t.nickname)}</span>`).join("")}</div>
   </div>

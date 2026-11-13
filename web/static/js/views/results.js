@@ -30,15 +30,22 @@ export function viewHasil() {
     </article>`,
     )
     .join("");
+  const empty = S.result.cards.length === 0;
+  const noMatch = empty
+    ? `<section class="card mt-5 border-amber-200 bg-amber-50 p-5">
+        <h2 class="font-bold text-ink">Belum ada rekomendasi dengan korelasi positif</h2>
+        <p class="mt-2 text-sm leading-relaxed text-mute">Tidak ada profil pekerjaan yang memiliki korelasi positif di antara pilihan Job Zone yang kamu pilih. Coba ulangi tes dengan jawaban yang paling menggambarkan minatmu, atau pilih rencana pendidikan “Belum tahu / tampilkan semua” agar cakupan pekerjaan lebih luas.</p>
+      </section>`
+    : `<div class="mt-5 space-y-4">${cards}</div>`;
   return appShell(
     "hasil",
     `${stepper(4)}
     <h1 class="text-3xl font-extrabold">Rekomendasi Karier Kamu</h1>
-    <p class="mt-1 text-mute">Berikut adalah karier yang paling sesuai dengan minat kamu.</p>
-    <div class="mt-3">${Note("Kecocokan = korelasi Pearson antara enam skor minatmu dan profil minat pekerjaan, dalam persen. Anggap sebagai bahan eksplorasi, bukan keputusan.")}</div>
-    <div class="mt-5 space-y-4">${cards}</div>
-    <div class="mt-6 flex flex-wrap gap-3"><a href="#/jaringan" class="btn-primary">${icon("graph")} Lihat Jaringan Karier</a>
-      <a href="#/feedback" class="btn-ghost">Beri Feedback</a><button class="btn-link text-sm" data-act="restart">Ulangi tes</button></div>`,
+    <p class="mt-1 text-mute">${empty ? "Profil minatmu berhasil dianalisis." : "Berikut adalah karier dengan korelasi minat positif tertinggi."}</p>
+    <div class="mt-3">${Note("Persentase menunjukkan korelasi Pearson antara enam skor minatmu dan profil minat pekerjaan. Hanya korelasi positif yang ditampilkan; angka ini bukan probabilitas keberhasilan kerja. Gunakan hasil sebagai bahan eksplorasi, bukan keputusan.")}</div>
+    ${noMatch}
+    <div class="mt-6 flex flex-wrap gap-3">${empty ? "" : `<a href="#/jaringan" class="btn-primary">${icon("graph")} Lihat Jaringan Karier</a>
+      <a href="#/feedback" class="btn-ghost">Beri Feedback</a>`}<button class="btn-link text-sm" data-act="restart">Ulangi tes</button></div>`,
   );
 }
 

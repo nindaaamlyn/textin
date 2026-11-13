@@ -4,8 +4,16 @@ Sistem rekomendasi karier untuk siswa SMA berbasis data O*NET 31.0 (capstone pro
 60 pertanyaan minat (RIASEC, O*NET Interest Profiler Short Form) dan mendapat sepuluh karier paling cocok
 beserta alasan, kompetensi, pendidikan, dan jaringan karier terkait.
 
-Metode: Content-Based Filtering. Skor minat siswa dibandingkan dengan profil minat tiap pekerjaan memakai
-Pearson Correlation; "kecocokan" adalah korelasi itu dalam persen (negatif ditampilkan 0%).
+Metode: Content-Based Filtering. TEXIN menghitung korelasi Pearson antara enam skor RIASEC siswa dan
+profil minat pekerjaan. Hanya korelasi positif yang ditampilkan sebagai rekomendasi; urutan nilai yang
+sama dipecahkan berdasarkan kode O*NET-SOC agar hasil deterministik. Persentase adalah 100 × korelasi,
+bukan probabilitas keberhasilan kerja atau ukuran validitas psikometrik.
+
+**Catatan validasi:** 60 butir O*NET Interest Profiler Short Form telah diterjemahkan dan diadaptasi ke
+Bahasa Indonesia, tetapi adaptasi ini belum menjalani validasi psikometrik formal pada populasi siswa
+SMA/SMK Indonesia. Gunakan hasil hanya sebagai bahan eksplorasi, bukan instrumen psikometri tervalidasi,
+diagnosis, atau dasar tunggal keputusan pendidikan/pekerjaan. Rincian adaptasi dan penyangkalan tersedia
+di halaman website **Modifikasi dan Penyangkalan** (`#/modifikasi`).
 
 ## Menjalankan di komputer sendiri
 
@@ -68,10 +76,62 @@ Hosting Python lain (Render, Railway): `pip install -r requirements.txt`, lalu
 | `crs/i18n/`, `data/` | Terjemahan dan tabel O*NET 31.0 |
 | `tests/` | Tes otomatis |
 
-## Atribusi
+## Atribusi, lisensi, dan modifikasi
 
-Aplikasi ini memuat informasi dari O*NET 31.0 Database dan O*NET Career Exploration Tools oleh
-U.S. Department of Labor, Employment and Training Administration (USDOL/ETA), digunakan di bawah
-lisensi CC BY 4.0 dan O*NET Tools Developer License. O*NET® adalah merek dagang USDOL/ETA.
-Pengembang aplikasi ini telah mengubah sebagian informasi tersebut. USDOL/ETA tidak menyetujui,
-mendukung, atau menguji perubahan ini.
+### O*NET 31.0 Database — CC BY 4.0
+
+This application includes information from the O*NET 31.0 Database by the U.S. Department of Labor,
+Employment and Training Administration (USDOL/ETA). Used under the
+[CC BY 4.0 license](https://creativecommons.org/licenses/by/4.0/). O*NET® is a trademark of USDOL/ETA.
+The TEXIN project team has modified some of this information. USDOL/ETA has not approved, endorsed,
+or tested these modifications.
+
+Sumber: [O*NET 31.0 Database](https://www.onetcenter.org/database.html).
+Ketentuan: [O*NET 31.0 Database Content License](https://www.onetcenter.org/license_db.html).
+
+Perubahan proyek pada data ini meliputi penerjemahan judul dan deskripsi pekerjaan ke Bahasa Indonesia,
+pemilihan dan penyajian ulang sebagian atribut pekerjaan, serta penyesuaian label untuk antarmuka TEXIN.
+
+### O*NET Career Exploration Tools — O*NET Tools Developer License
+
+This application includes information from the O*NET Career Exploration Tools by the U.S. Department
+of Labor, Employment and Training Administration (USDOL/ETA). Used under the
+[O*NET Tools Developer License](https://www.onetcenter.org/license_toolsdev.html). O*NET® is a trademark
+of USDOL/ETA. The TEXIN project team has modified all or some of this information. USDOL/ETA has not
+approved, endorsed, or tested these modifications.
+
+Sumber: [O*NET Career Exploration Tools](https://www.onetcenter.org/tools.html).
+Ketentuan: [Career Exploration Tools Content License](https://www.onetcenter.org/license_tools.html)
+dan [O*NET Tools Developer License](https://www.onetcenter.org/license_toolsdev.html).
+
+Perubahan proyek meliputi terjemahan 60 aktivitas kerja ke Bahasa Indonesia, penyesuaian label respons
+menjadi lima pilihan dengan skor 0–4, penjumlahan enam skor RIASEC pada rentang 0–40, penyajian butir
+secara berselang-seling, dan pengolahan hasil menggunakan implementasi korelasi Pearson TEXIN.
+Pemeringkatan, filter Job Zone, alasan kecocokan, dan visualisasi merupakan bagian dari aplikasi TEXIN,
+bukan hasil resmi O*NET.
+
+**Status validasi:** adaptasi Bahasa Indonesia belum menjalani validasi psikometrik formal pada populasi
+sasaran siswa SMA/SMK Indonesia. Persyaratan validasi produk dalam O*NET Tools Developer License belum
+dapat dinyatakan selesai. Tim perlu melakukan telaah ahli, uji keterbacaan, uji coba populasi sasaran,
+serta evaluasi validitas dan reliabilitas sebelum menyatakan bahwa persyaratan validasi telah dipenuhi.
+Halaman website `#/modifikasi` memuat uraian perubahan dan batas penggunaan yang dapat dibaca pengguna.
+
+## Pengujian otomatis
+
+Pengujian lokal:
+
+```bash
+.venv/bin/python -m unittest discover -s tests -v
+```
+
+Pengujian SQLite dan API berjalan secara lokal. Sepuluh tes kontrak PostgreSQL akan dilewati jika
+`TEST_DATABASE_URL` tidak diisi. Untuk menguji PostgreSQL, gunakan database scratch khusus (bukan
+production), lalu jalankan:
+
+```bash
+TEST_DATABASE_URL="postgresql://postgres:postgres@localhost:5432/texin_test" \
+  .venv/bin/python -m unittest tests.test_storage -v
+```
+
+GitHub Actions pada `.github/workflows/tests.yml` menyiapkan PostgreSQL service dan menjalankan seluruh
+suite, termasuk tes kontrak PostgreSQL, pada setiap push dan pull request.

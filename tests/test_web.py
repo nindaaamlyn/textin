@@ -62,6 +62,7 @@ class WebTest(unittest.TestCase):
         self.assertEqual(len(c["types"]), 6)
         self.assertEqual(len(c["samples"]), 6)
         self.assertEqual(c["plans"][0]["max_job_zone"], None)
+        self.assertIn("Modifikasi dan Penyangkalan", c["attribution"])
 
     def test_recommend_ranks_by_match_and_explains(self):
         r = self.client.post("/api/recommend", json={"answers": answers("Investigative", "Conventional")}).json()
@@ -72,6 +73,7 @@ class WebTest(unittest.TestCase):
         self.assertEqual(len(matches), 10)
         self.assertEqual(matches, sorted(matches, reverse=True))
         self.assertGreaterEqual(matches[0], 90)
+        self.assertTrue(all(c["correlation"] > 0 for c in r["cards"]))
         self.assertTrue(r["cards"][0]["reasons"])
         self.assertEqual(len(r["cards"][0]["comparison"]), 6)
         self.assertIsNone(r["result_id"])
@@ -90,6 +92,18 @@ class WebTest(unittest.TestCase):
     def test_bad_answers_are_rejected(self):
         self.assertEqual(self.client.post("/api/recommend", json={"answers": [1] * 59}).status_code, 422)
         self.assertEqual(self.client.post("/api/recommend", json={"answers": [5] + [1] * 59}).status_code, 422)
+
+
+    def test_modifications_and_disclaimers_are_publicly_accessible(self):
+        page = self.client.get("/static/js/views/modifications.js")
+        self.assertEqual(page.status_code, 200)
+        self.assertIn("O*NET Tools Developer License", page.text)
+        self.assertIn("CC BY 4.0", page.text)
+        self.assertIn("belum menjalani validasi psikometrik formal", page.text)
+        main = (STATIC / "js" / "main.js").read_text()
+        landing = (STATIC / "js" / "views" / "landing.js").read_text()
+        self.assertIn("modifikasi: viewModifications", main)
+        self.assertIn("Modifikasi dan Penyangkalan", landing)
 
     def test_detail_and_network(self):
         code = self.client.post("/api/recommend", json={"answers": answers("Social")}).json()["cards"][0]["code"]
