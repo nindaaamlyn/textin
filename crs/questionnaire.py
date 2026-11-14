@@ -15,7 +15,8 @@ Attribution required by that license:
     U.S. Department of Labor, Employment and Training Administration (USDOL/ETA). Used under
     the O*NET Tools Developer License. O*NET® is a trademark of USDOL/ETA. The TEXIN project
     team has modified all or some of this information. USDOL/ETA has not approved, endorsed,
-    or tested these modifications.
+    or tested these modifications. See NOTICE_O_NET.md for the required modification/liability
+    statement and the disclaimer-of-warranties reference.
 """
 from dataclasses import dataclass
 

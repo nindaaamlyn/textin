@@ -18,6 +18,18 @@ import { go, render } from "../router.js";
 import { forgetHistory } from "./history.js";
 import { pushProgress, stopProgress } from "../sync.js";
 
+
+// Required O*NET Tools Developer License notice. Shown before the assessment and while
+// adapted items are presented; the full explanation is available from #/modifikasi.
+const O_NET_TOOLS_NOTICE = `
+<div class="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-4 text-left">
+  <p class="text-sm font-bold text-ink">Pemberitahuan sumber, modifikasi, dan lisensi</p>
+  <p class="mt-2 text-xs leading-relaxed text-ink">This application includes information from the O*NET Career Exploration Tools by the U.S. Department of Labor, Employment and Training Administration (USDOL/ETA). Used under the O*NET Tools Developer License. O*NET® is a trademark of USDOL/ETA. The TEXIN project team has modified all or some of this information. USDOL/ETA has not approved, endorsed, or tested these modifications.</p>
+  <p class="mt-2 text-xs leading-relaxed text-ink">The TEXIN project team has modified a portion of the O*NET® Career Exploration Tools. The U.S. Department of Labor, Employment and Training Administration (USDOL/ETA) has not approved, endorsed, or tested these modifications. As such, USDOL/ETA will not be liable to any third party or end-user for any damages arising out of or from the use or misuse of the modified O*NET Career Exploration Tools or any products incorporating or containing the modified O*NET Career Exploration Tools.</p>
+  <p class="mt-2 text-xs leading-relaxed text-mute">Materi berlisensi disediakan “as-is” dan “as-available” sejauh diizinkan hukum; lihat Section 5 pada O*NET Tools Developer License.</p>
+  <a href="#/modifikasi" class="mt-2 inline-block text-xs font-bold text-brand-600 underline">Modifications and Disclaimers (Modifikasi dan Penyangkalan)</a>
+</div>`;
+
 export function viewTes() {
   const plans = CONFIG.plans
     .map(
@@ -37,6 +49,7 @@ export function viewTes() {
     <div class="card p-6 md:p-8">
       <h1 class="text-2xl font-extrabold">Tes Minat Karier</h1>
       <p class="mt-2 text-mute">Kamu akan menjawab 60 pertanyaan tentang aktivitas yang mungkin kamu suka lakukan dalam pekerjaan.</p>
+      ${O_NET_TOOLS_NOTICE}
       <div class="mt-5">${CheckList(rules)}</div>
       <div class="mt-6"><label class="label" for="plan">Rencana pendidikanmu</label>
         <select id="plan" class="field max-w-md">${plans}</select>
@@ -76,6 +89,7 @@ export function viewKuis() {
   return appShell(
     "tes",
     `${stepper(1)}
+    ${O_NET_TOOLS_NOTICE}
     <div class="mb-2 flex items-center justify-between text-sm font-semibold"><span id="quiz-count"></span><span id="quiz-percent" class="text-mute"></span></div>
     <div class="h-2.5 w-full overflow-hidden rounded-full bg-brand-50"><div id="quiz-bar" class="h-full rounded-full bg-brand-500 transition-all duration-500" style="width:${(100 * answered()) / n}%"></div></div>
     <div class="${CARD}" id="question">${Question(CONFIG.items[S.pos])}</div>

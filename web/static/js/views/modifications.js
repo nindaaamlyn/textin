@@ -10,44 +10,57 @@ export const viewModifications = () => `<div class="min-h-screen bg-slate-50">
   </header>
   <main data-page class="mx-auto max-w-4xl space-y-5 px-4 py-8 lg:px-8">
     <section class="card p-6 sm:p-8">
-      <h1 class="text-3xl font-extrabold">Modifikasi dan Penyangkalan</h1>
-      <p class="mt-3 leading-relaxed text-mute">Halaman ini menjelaskan sumber materi, lisensi, perubahan yang dibuat oleh tim TEXIN, serta batas validasi aplikasi. TEXIN merupakan proyek independen dan bukan produk resmi atau layanan yang disetujui oleh USDOL/ETA.</p>
+      <h1 class="text-3xl font-extrabold">Modifications and Disclaimers (Modifikasi dan Penyangkalan)</h1>
+      <p class="mt-3 leading-relaxed text-mute">Halaman ini menjelaskan sumber materi, lisensi, perubahan yang dibuat oleh tim TEXIN, dan batas validasi aplikasi. TEXIN merupakan proyek independen dan bukan produk resmi atau layanan yang disetujui oleh USDOL/ETA.</p>
     </section>
 
     <section class="card space-y-3 p-6">
-      <h2 class="text-xl font-bold">1. O*NET 31.0 Database</h2>
+      <h2 class="text-xl font-bold">1. O*NET 31.0 Database — CC BY 4.0</h2>
       <p class="text-sm leading-relaxed text-mute">TEXIN menggunakan sebagian informasi pekerjaan dari O*NET 31.0 Database, yang disponsori oleh U.S. Department of Labor, Employment and Training Administration (USDOL/ETA), dan dikembangkan oleh National Center for O*NET Development.</p>
       <p class="text-sm leading-relaxed">This application includes information from the O*NET 31.0 Database by the U.S. Department of Labor, Employment and Training Administration (USDOL/ETA). Used under the <a class="font-semibold text-brand-600 underline" href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0 license</a>. O*NET® is a trademark of USDOL/ETA. The TEXIN project team has modified some of this information. USDOL/ETA has not approved, endorsed, or tested these modifications.</p>
       <p class="text-sm">Sumber data: <a class="font-semibold text-brand-600 underline" href="https://www.onetcenter.org/database.html" target="_blank" rel="noopener noreferrer">O*NET 31.0 Database</a>. Ketentuan lisensi: <a class="font-semibold text-brand-600 underline" href="https://www.onetcenter.org/license_db.html" target="_blank" rel="noopener noreferrer">O*NET 31.0 Database Content License</a>.</p>
-      <p class="text-sm leading-relaxed text-mute">Perubahan yang dibuat tim TEXIN mencakup penerjemahan judul dan deskripsi pekerjaan ke Bahasa Indonesia, pemilihan serta penyajian ulang sebagian atribut pekerjaan, dan penyesuaian label agar dapat dibaca oleh pengguna aplikasi. Data sumber tetap merupakan data O*NET; terjemahan dan penyajiannya merupakan hasil adaptasi proyek.</p>
+      <p class="text-sm leading-relaxed text-mute">Perubahan tim TEXIN pada data database meliputi pemilihan dan penyajian ulang sebagian atribut pekerjaan, pemeriksaan kelengkapan, serta penerjemahan sebagian judul, label, dan deskripsi ke Bahasa Indonesia. Data sumber tetap berasal dari O*NET 31.0 Database; terjemahan dan penyajiannya merupakan adaptasi tim TEXIN.</p>
     </section>
 
     <section class="card space-y-3 p-6">
-      <h2 class="text-xl font-bold">2. O*NET Career Exploration Tools</h2>
-      <p class="text-sm leading-relaxed text-mute">Kuesioner TEXIN mengadaptasi 60 aktivitas kerja dari O*NET Interest Profiler Short Form. Materi Career Exploration Tools digunakan berdasarkan O*NET Tools Developer License, bukan lisensi CC BY 4.0 untuk basis data.</p>
+      <h2 class="text-xl font-bold">2. O*NET Career Exploration Tools / Interest Profiler Short Form</h2>
+      <p class="text-sm leading-relaxed text-mute">TEXIN mempertahankan 60 aktivitas kerja dari O*NET Interest Profiler Short Form. Materi diterjemahkan dan diadaptasi ke Bahasa Indonesia. Karena ada perubahan materi, lisensi yang digunakan adalah O*NET Tools Developer License, bukan lisensi CC BY 4.0 untuk database.</p>
       <p class="text-sm leading-relaxed">This application includes information from the O*NET Career Exploration Tools by the U.S. Department of Labor, Employment and Training Administration (USDOL/ETA). Used under the <a class="font-semibold text-brand-600 underline" href="https://www.onetcenter.org/license_toolsdev.html" target="_blank" rel="noopener noreferrer">O*NET Tools Developer License</a>. O*NET® is a trademark of USDOL/ETA. The TEXIN project team has modified all or some of this information. USDOL/ETA has not approved, endorsed, or tested these modifications.</p>
-      <p class="rounded-lg bg-amber-50 p-3 text-sm leading-relaxed text-ink">Status pemenuhan lisensi: syarat validasi produk pada O*NET Tools Developer License belum dapat dinyatakan selesai. Tim perlu menyelesaikan validasi produk sebelum menyatakan bahwa seluruh persyaratan lisensi telah dipenuhi.</p>
-      <p class="text-sm">Sumber alat: <a class="font-semibold text-brand-600 underline" href="https://www.onetcenter.org/tools.html" target="_blank" rel="noopener noreferrer">O*NET Career Exploration Tools</a>. Informasi lisensi: <a class="font-semibold text-brand-600 underline" href="https://www.onetcenter.org/license_tools.html" target="_blank" rel="noopener noreferrer">Career Exploration Tools Content License</a> dan <a class="font-semibold text-brand-600 underline" href="https://www.onetcenter.org/license_toolsdev.html" target="_blank" rel="noopener noreferrer">O*NET Tools Developer License</a>.</p>
-      <h3 class="pt-2 font-semibold">Bentuk adaptasi dalam TEXIN</h3>
-      <div class="space-y-2 text-sm leading-relaxed text-mute">
-        <p>• 60 aktivitas kerja diterjemahkan dari Bahasa Inggris ke Bahasa Indonesia.</p>
-        <p>• Label jawaban disajikan dalam Bahasa Indonesia dengan lima pilihan, diberi skor 0–4.</p>
-        <p>• Skor enam tipe RIASEC dijumlahkan; setiap tipe memiliki rentang skor 0–40.</p>
-        <p>• Butir disajikan berselang-seling menurut tipe RIASEC.</p>
-        <p>• Profil siswa dibandingkan dengan profil pekerjaan melalui implementasi korelasi Pearson milik TEXIN. Pemeringkatan, filter Job Zone, tampilan persentase, alasan kecocokan, dan visualisasi merupakan pengolahan aplikasi TEXIN, bukan hasil resmi O*NET.</p>
-      </div>
+      <p class="text-sm">Sumber materi: <a class="font-semibold text-brand-600 underline" href="https://www.onetcenter.org/tools.html" target="_blank" rel="noopener noreferrer">O*NET Career Exploration Tools</a> dan <a class="font-semibold text-brand-600 underline" href="https://www.onetcenter.org/IP.html" target="_blank" rel="noopener noreferrer">O*NET Interest Profiler</a>. Ketentuan lisensi: <a class="font-semibold text-brand-600 underline" href="https://www.onetcenter.org/license_toolsdev.html" target="_blank" rel="noopener noreferrer">O*NET Tools Developer License</a>.</p>
     </section>
 
     <section class="card space-y-3 border-amber-200 bg-amber-50 p-6">
-      <h2 class="text-xl font-bold">3. Status validasi dan batas penggunaan</h2>
-      <p class="text-sm leading-relaxed">Terjemahan dan adaptasi kuesioner Bahasa Indonesia pada versi ini <strong>belum menjalani validasi psikometrik formal</strong> pada populasi sasaran siswa SMA/SMK di Indonesia. Karena itu, TEXIN belum boleh diperlakukan sebagai instrumen psikometri yang tervalidasi, alat diagnosis, penentu kelulusan, atau dasar tunggal keputusan pendidikan dan pekerjaan.</p>
-      <p class="text-sm leading-relaxed">Hasil rekomendasi hanya bahan eksplorasi awal. Pengguna perlu mempertimbangkan minat, kemampuan, pengalaman, kondisi, konsultasi guru atau konselor, serta informasi pendidikan dan pekerjaan lain. Sebelum adaptasi ini digunakan sebagai instrumen asesmen resmi, tim pengembang perlu menyelesaikan telaah ahli, uji keterbacaan, uji coba pada populasi sasaran, serta evaluasi validitas dan reliabilitas sesuai lisensi dan praktik penelitian yang berlaku.</p>
+      <h2 class="text-xl font-bold">3. Pernyataan modifikasi dan pembatasan tanggung jawab</h2>
+      <p class="text-sm leading-relaxed">The TEXIN project team has modified a portion of the O*NET® Career Exploration Tools. The U.S. Department of Labor, Employment and Training Administration (USDOL/ETA) has not approved, endorsed, or tested these modifications. As such, USDOL/ETA will not be liable to any third party or end-user for any damages arising out of or from the use or misuse of the modified O*NET Career Exploration Tools or any products incorporating or containing the modified O*NET Career Exploration Tools.</p>
+      <p class="text-sm leading-relaxed text-mute">Terjemahan: Tim proyek TEXIN telah memodifikasi sebagian O*NET® Career Exploration Tools. USDOL/ETA tidak menyetujui, mendukung, atau menguji modifikasi tersebut. Oleh karena itu, USDOL/ETA tidak bertanggung jawab kepada pihak ketiga atau pengguna akhir atas kerugian apa pun yang timbul dari penggunaan atau penyalahgunaan materi O*NET Career Exploration Tools yang telah dimodifikasi, atau produk yang memasukkan atau memuat materi tersebut.</p>
+      <p class="text-xs leading-relaxed text-mute">Pemberitahuan ini disertakan sesuai ketentuan modifikasi pada O*NET Tools Developer License. Lihat Section 3(b)(3) pada tautan lisensi di atas.</p>
     </section>
 
-    <section class="card space-y-2 p-6">
-      <h2 class="text-xl font-bold">4. Penyangkalan</h2>
-      <p class="text-sm leading-relaxed text-mute">O*NET® adalah merek dagang USDOL/ETA. Penyebutan O*NET hanya menunjukkan sumber materi yang digunakan. USDOL/ETA tidak menyetujui, mendukung, mengesahkan, atau menguji TEXIN maupun perubahan yang dibuat tim proyek. TEXIN dikembangkan secara independen untuk tujuan eksplorasi karier.</p>
-      <p class="text-sm leading-relaxed text-mute">Informasi pekerjaan berasal dari sumber O*NET Amerika Serikat dan tidak otomatis menggambarkan persyaratan, peluang, atau kondisi pasar kerja Indonesia. Periksa kembali informasi pendidikan, sertifikasi, regulasi, dan peluang kerja melalui sumber lokal yang relevan.</p>
+    <section class="card space-y-3 p-6">
+      <h2 class="text-xl font-bold">4. Bentuk adaptasi yang dilakukan tim TEXIN</h2>
+      <ul class="list-disc space-y-2 pl-5 text-sm leading-relaxed text-mute">
+        <li>60 aktivitas kerja diterjemahkan dari Bahasa Inggris ke Bahasa Indonesia; jumlah butir dipertahankan.</li>
+        <li>Lima pilihan respons ditampilkan dalam Bahasa Indonesia dan dikodekan 0–4.</li>
+        <li>Enam dimensi RIASEC masing-masing dihitung dari 10 butir dengan rentang skor 0–40.</li>
+        <li>Butir disajikan secara berselang-seling menurut dimensi RIASEC.</li>
+        <li>Profil pengguna dicocokkan dengan profil pekerjaan melalui implementasi Pearson Correlation milik TEXIN.</li>
+        <li>Pemeringkatan, filter Job Zone, tampilan persentase, alasan kecocokan, dan visualisasi merupakan pengolahan aplikasi TEXIN, bukan hasil resmi O*NET.</li>
+      </ul>
+    </section>
+
+    <section class="card space-y-3 border-amber-200 bg-amber-50 p-6">
+      <h2 class="text-xl font-bold">5. Status validasi dan batas penggunaan</h2>
+      <p class="text-sm leading-relaxed">Adaptasi Bahasa Indonesia pada versi ini belum menjalani validasi psikometrik formal pada populasi sasaran siswa SMA/SMK di Indonesia. Karena itu, TEXIN belum boleh diperlakukan sebagai instrumen psikometri yang tervalidasi di Indonesia, alat diagnosis, penentu kelulusan, atau dasar tunggal keputusan pendidikan dan pekerjaan.</p>
+      <p class="text-sm leading-relaxed">O*NET Tools Developer License mensyaratkan studi validasi terhadap produk yang mengandung materi adaptasi untuk memastikan hasilnya valid bagi tujuan, audiens, dan pengguna yang dituju. Pemberitahuan lisensi dan pengujian perangkat lunak tidak menggantikan studi validasi tersebut. Tim TEXIN perlu menyelesaikan studi validasi formal sebelum mengklaim produk tervalidasi atau memperkenalkan produk adaptasi sebagai produk yang telah memenuhi persyaratan validasi.</p>
+      <p class="text-sm leading-relaxed">Hasil TEXIN hanya bahan eksplorasi awal dan perlu didiskusikan dengan guru BK/konselor. Pengguna harus mempertimbangkan minat, kemampuan, pengalaman, dan informasi pendidikan/pekerjaan lain. Informasi pekerjaan berasal dari sumber O*NET Amerika Serikat dan tidak otomatis menggambarkan persyaratan atau pasar kerja Indonesia.</p>
+      <p class="text-sm leading-relaxed">Karena prototipe pernah tersedia secara daring sebelum studi validasi selesai, tim perlu meminta klarifikasi tertulis dari National Center for O*NET Development mengenai penanganan status produk yang telah diperkenalkan.</p>
+      <p class="text-sm">Rencana penelitian: <a class="font-semibold text-brand-600 underline" href="https://www.onetcenter.org/license_toolsdev.html" target="_blank" rel="noopener noreferrer">O*NET Tools Developer License</a>; acuan adaptasi: <a class="font-semibold text-brand-600 underline" href="https://members.intestcom.org/files/guideline_test_adaptation_2ed.pdf" target="_blank" rel="noopener noreferrer">ITC Guidelines for Translating and Adapting Tests</a>.</p>
+    </section>
+
+    <section class="card space-y-3 p-6">
+      <h2 class="text-xl font-bold">6. Penyangkalan jaminan dan status independen</h2>
+      <p class="text-sm leading-relaxed text-mute">O*NET Tools Developer License Section 5 menyatakan bahwa, sejauh diizinkan hukum, pemberi lisensi menyediakan materi berlisensi dalam keadaan “as-is” dan “as-available”, tanpa jaminan tersurat atau tersirat, termasuk jaminan akurasi atau kesesuaian untuk tujuan tertentu. Lihat <a class="font-semibold text-brand-600 underline" href="https://www.onetcenter.org/license_toolsdev.html" target="_blank" rel="noopener noreferrer">Section 5 — Disclaimer of Warranties and Limitation of Liability</a>.</p>
+      <p class="text-sm leading-relaxed text-mute">TEXIN dikembangkan secara independen. O*NET® adalah merek dagang USDOL/ETA. Penyebutan O*NET hanya menunjukkan sumber materi yang digunakan; USDOL/ETA tidak menyetujui, mendukung, mengesahkan, atau menguji TEXIN maupun perubahan yang dibuat tim proyek.</p>
     </section>
   </main>
   ${footer()}

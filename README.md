@@ -1,3 +1,5 @@
+> **Status paket:** paket kerja revisi pemberitahuan lisensi berbasis commit dasar `5bb3a8079037e78c9c35af5101aaaa54d57ece6b`. Perubahan pada paket ini belum menjadi commit GitHub dan belum otomatis terpasang di Vercel. Uji, tinjau, commit, push, dan deploy sebelum menyatakan pemberitahuan baru aktif pada website publik.
+
 # crs-onet — texin, find your career
 
 Sistem rekomendasi karier untuk siswa SMA berbasis data O*NET 31.0 (capstone project). Siswa menjawab
@@ -92,29 +94,36 @@ Ketentuan: [O*NET 31.0 Database Content License](https://www.onetcenter.org/lice
 Perubahan proyek pada data ini meliputi penerjemahan judul dan deskripsi pekerjaan ke Bahasa Indonesia,
 pemilihan dan penyajian ulang sebagian atribut pekerjaan, serta penyesuaian label untuk antarmuka TEXIN.
 
-### O*NET Career Exploration Tools — O*NET Tools Developer License
+### O*NET Career Exploration Tools / Interest Profiler Short Form — O*NET Tools Developer License
 
-This application includes information from the O*NET Career Exploration Tools by the U.S. Department
-of Labor, Employment and Training Administration (USDOL/ETA). Used under the
-[O*NET Tools Developer License](https://www.onetcenter.org/license_toolsdev.html). O*NET® is a trademark
-of USDOL/ETA. The TEXIN project team has modified all or some of this information. USDOL/ETA has not
-approved, endorsed, or tested these modifications.
+TEXIN mempertahankan 60 butir aktivitas kerja O*NET Interest Profiler Short Form, tetapi menerjemahkan butir ke Bahasa Indonesia dan mengadaptasi penyajian respons serta pengolahan hasil. Karena materi Career Exploration Tools diterjemahkan/diubah, lisensi yang relevan adalah O*NET Tools Developer License, bukan CC BY 4.0 yang digunakan untuk database pekerjaan.
 
-Sumber: [O*NET Career Exploration Tools](https://www.onetcenter.org/tools.html).
-Ketentuan: [Career Exploration Tools Content License](https://www.onetcenter.org/license_tools.html)
-dan [O*NET Tools Developer License](https://www.onetcenter.org/license_toolsdev.html).
+**Atribusi dan pemberitahuan modifikasi:**
 
-Perubahan proyek meliputi terjemahan 60 aktivitas kerja ke Bahasa Indonesia, penyesuaian label respons
-menjadi lima pilihan dengan skor 0–4, penjumlahan enam skor RIASEC pada rentang 0–40, penyajian butir
-secara berselang-seling, dan pengolahan hasil menggunakan implementasi korelasi Pearson TEXIN.
-Pemeringkatan, filter Job Zone, alasan kecocokan, dan visualisasi merupakan bagian dari aplikasi TEXIN,
-bukan hasil resmi O*NET.
+> This application includes information from the O*NET Career Exploration Tools by the U.S. Department of Labor, Employment and Training Administration (USDOL/ETA). Used under the O*NET Tools Developer License. O*NET® is a trademark of USDOL/ETA. The TEXIN project team has modified all or some of this information. USDOL/ETA has not approved, endorsed, or tested these modifications.
 
-**Status validasi:** adaptasi Bahasa Indonesia belum menjalani validasi psikometrik formal pada populasi
-sasaran siswa SMA/SMK Indonesia. Persyaratan validasi produk dalam O*NET Tools Developer License belum
-dapat dinyatakan selesai. Tim perlu melakukan telaah ahli, uji keterbacaan, uji coba populasi sasaran,
-serta evaluasi validitas dan reliabilitas sebelum menyatakan bahwa persyaratan validasi telah dipenuhi.
-Halaman website `#/modifikasi` memuat uraian perubahan dan batas penggunaan yang dapat dibaca pengguna.
+**Pemberitahuan pembatasan tanggung jawab yang diminta lisensi:**
+
+> The TEXIN project team has modified a portion of the O*NET® Career Exploration Tools. The U.S. Department of Labor, Employment and Training Administration (USDOL/ETA) has not approved, endorsed, or tested these modifications. As such, USDOL/ETA will not be liable to any third party or end-user for any damages arising out of or from the use or misuse of the modified O*NET Career Exploration Tools or any products incorporating or containing the modified O*NET Career Exploration Tools.
+
+Sumber materi: [O*NET Career Exploration Tools](https://www.onetcenter.org/tools.html) dan [O*NET Interest Profiler](https://www.onetcenter.org/IP.html).  
+Lisensi: [O*NET Tools Developer License](https://www.onetcenter.org/license_toolsdev.html).
+
+Materi yang dilisensikan disediakan “as-is” dan “as-available” sejauh diizinkan hukum; rujuk Section 5, **Disclaimer of Warranties and Limitation of Liability**, pada [O*NET Tools Developer License](https://www.onetcenter.org/license_toolsdev.html). Pemberitahuan lengkap dan terjemahan Indonesianya ada pada [`NOTICE_O_NET.md`](NOTICE_O_NET.md).
+
+**Status validasi:** adaptasi Bahasa Indonesia belum menjalani studi validasi formal pada populasi siswa SMA/SMK Indonesia. Produk belum boleh disebut sebagai instrumen psikometri yang tervalidasi di Indonesia. O*NET Tools Developer License mensyaratkan studi validasi terhadap produk yang memuat materi adaptasi. Karena prototipe pernah tersedia daring sebelum studi selesai, tim perlu meminta klarifikasi tertulis dari National Center for O*NET Development mengenai penanganan status produk yang telah diperkenalkan. Pemberitahuan lisensi tidak menggantikan studi validasi.
+
+**Bentuk adaptasi yang dilakukan:**
+- 60 aktivitas kerja diterjemahkan ke Bahasa Indonesia.
+- Lima label respons digunakan dan dikodekan 0–4.
+- Enam dimensi RIASEC masing-masing dihitung dari 10 butir (rentang skor 0–40).
+- Butir disajikan secara berselang-seling.
+- Profil pengguna dibandingkan dengan profil pekerjaan menggunakan implementasi Pearson Correlation TEXIN.
+- Pemeringkatan, filter Job Zone, persentase, alasan kecocokan, dan visualisasi merupakan pengolahan TEXIN, bukan keluaran resmi O*NET.
+
+**Batas penggunaan:** hasil hanya untuk eksplorasi awal dan diskusi dengan guru BK/konselor. Bukan diagnosis, bukan tes psikologi resmi tervalidasi di Indonesia, dan bukan dasar tunggal keputusan pendidikan atau pekerjaan.
+
+Lihat pemberitahuan lengkap pada [`NOTICE_O_NET.md`](NOTICE_O_NET.md), panduan pengguna [`PANDUAN_PENGGUNA_TEXIN.md`](PANDUAN_PENGGUNA_TEXIN.md), dan rencana validasi [`RENCANA_VALIDASI_PSIKOMETRIK_TEXIN.md`](RENCANA_VALIDASI_PSIKOMETRIK_TEXIN.md). Halaman website `#/tes` menampilkan pemberitahuan sebelum asesmen dan pada halaman pertanyaan, dengan tautan **Modifications and Disclaimers (Modifikasi dan Penyangkalan)**; halaman `#/modifikasi` memuat uraian lengkap.
 
 ## Pengujian otomatis
 

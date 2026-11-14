@@ -15,3 +15,13 @@
 - Seluruh 19 berkas JavaScript lolos pemeriksaan sintaks Node.js.
 
 Tes PostgreSQL belum boleh dinyatakan lulus sampai workflow GitHub Actions dijalankan dengan sukses atau tes kontrak dijalankan pada database uji khusus.
+
+## Revisi pemberitahuan lisensi O*NET dan rencana validasi
+
+- Memperjelas pemisahan lisensi O*NET 31.0 Database (CC BY 4.0) dan O*NET Career Exploration Tools (O*NET Tools Developer License).
+- Menambahkan teks atribusi dan modifikasi Tools Developer License, termasuk pernyataan pembatasan tanggung jawab USDOL/ETA sesuai Section 3(b)(3).
+- Menambahkan referensi penyangkalan jaminan Section 5.
+- Menampilkan pemberitahuan pada layar pengarahan asesmen (`#/tes`) dan halaman pertanyaan (`#/kuis`), serta memperluas halaman `#/modifikasi`.
+- Menambahkan `NOTICE_O_NET.md`, `PANDUAN_PENGGUNA_TEXIN.md`, dan `RENCANA_VALIDASI_PSIKOMETRIK_TEXIN.md`.
+- Tidak mengubah 60 butir, label respons, struktur RIASEC, atau algoritma rekomendasi.
+- Revisi ini adalah working tree berbasis commit 5bb3a80 dan belum di-commit/push/deploy.

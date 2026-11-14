@@ -1,0 +1,4 @@
+Base repository commit: 5bb3a8079037e78c9c35af5101aaaa54d57ece6b
+This archive contains additional, uncommitted license-notice and validation-documentation revisions.
+It is NOT byte-for-byte identical to commit 5bb3a80 and has NOT been pushed to GitHub or deployed to Vercel.
+Run tests, review the diff, commit, push, and deploy before describing these revisions as live.
