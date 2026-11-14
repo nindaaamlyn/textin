@@ -74,4 +74,4 @@ Pemberitahuan dan tautan menuju halaman “Modifications and Disclaimers (Modifi
 
 ## 6. Catatan versi
 
-Paket ini merupakan revisi kerja berbasis commit dasar `5bb3a8079037e78c9c35af5101aaaa54d57ece6b`. Perubahan pemberitahuan lisensi dan dokumen validasi di dalam paket ini **belum menjadi commit GitHub dan belum otomatis terpasang pada website Vercel**. Setelah ditinjau, perubahan harus diuji, di-commit, di-push, dan di-deploy sebelum dinyatakan aktif pada website publik.
+Revisi pemberitahuan lisensi dan rencana validasi berasal dari commit dasar `5bb3a8079037e78c9c35af5101aaaa54d57ece6b` dan telah di-commit pada `52b81f4` (branch `main`). Pembaruan dokumentasi berikutnya tercatat pada `1f7289b` tanggal 14 November 2026. GitHub Actions untuk `1f7289b` menunjukkan job `python-tests` berhasil, dan screenshot Vercel menunjukkan `1f7289b` sebagai deployment **Ready / Latest**, **Production / Current**. Pemberitahuan lisensi telah terverifikasi tampil pada `#/modifikasi`, `#/tes`, dan `#/kuis`. **Studi validasi psikometrik formal atas adaptasi 60 butir belum dilakukan**; pengujian teknis dan penayangan pemberitahuan tidak menggantikan studi tersebut.
