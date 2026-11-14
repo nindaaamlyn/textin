@@ -1,4 +1,4 @@
-> **Status paket:** paket kerja revisi pemberitahuan lisensi berbasis commit dasar `5bb3a8079037e78c9c35af5101aaaa54d57ece6b`. Perubahan pada paket ini belum menjadi commit GitHub dan belum otomatis terpasang di Vercel. Uji, tinjau, commit, push, dan deploy sebelum menyatakan pemberitahuan baru aktif pada website publik.
+> **Status revisi (14 November 2026):** perbaikan pemberitahuan lisensi O*NET dan rencana validasi sudah di-commit pada `52b81f4` (branch `main`) dan berhasil di-deploy ke Production `https://textin-sooty.vercel.app/`. Workflow GitHub Actions untuk commit tersebut berstatus **Success**. Halaman `#/modifikasi`, pemberitahuan sebelum asesmen (`#/tes`), dan awal kuis (`#/kuis`) sudah diperiksa melalui screenshot Production. **Validasi psikometrik formal terhadap adaptasi Bahasa Indonesia belum dilakukan; aplikasi tetap dibatasi sebagai prototipe eksplorasi karier dan penggunaan lebih lanjut perlu mempertimbangkan ketentuan O*NET Tools Developer License.**
 
 # crs-onet — texin, find your career
 

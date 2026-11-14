@@ -14,7 +14,13 @@
 - 10 tes PostgreSQL dilewati karena `TEST_DATABASE_URL` tidak tersedia pada lingkungan lokal.
 - Seluruh 19 berkas JavaScript lolos pemeriksaan sintaks Node.js.
 
-Tes PostgreSQL belum boleh dinyatakan lulus sampai workflow GitHub Actions dijalankan dengan sukses atau tes kontrak dijalankan pada database uji khusus.
+Catatan: hasil lokal 59 lulus/10 skipped di atas berasal dari lingkungan TANPA
+TEST_DATABASE_URL. Ini bukan hasil CI. Pada GitHub Actions commit dasar,
+suite dengan PostgreSQL 16 telah lulus (69 tes, tidak skipped menurut bukti terdokumentasi).
+Workflow GitHub Actions commit revisi 52b81f4 juga berstatus Success (run 43541659140);
+log rinci jumlah hasil run revisi tidak ditampilkan pada bukti screenshot yang tersedia.
+Secara terpisah, 10 tes PostgreSQL pada Neon testing telah dijalankan dan lulus (10/10);
+database testing tersebut bukan database PostgreSQL sementara yang dipakai GitHub Actions.
 
 ## Revisi pemberitahuan lisensi O*NET dan rencana validasi
 
@@ -24,4 +30,10 @@ Tes PostgreSQL belum boleh dinyatakan lulus sampai workflow GitHub Actions dijal
 - Menampilkan pemberitahuan pada layar pengarahan asesmen (`#/tes`) dan halaman pertanyaan (`#/kuis`), serta memperluas halaman `#/modifikasi`.
 - Menambahkan `NOTICE_O_NET.md`, `PANDUAN_PENGGUNA_TEXIN.md`, dan `RENCANA_VALIDASI_PSIKOMETRIK_TEXIN.md`.
 - Tidak mengubah 60 butir, label respons, struktur RIASEC, atau algoritma rekomendasi.
-- Revisi ini adalah working tree berbasis commit 5bb3a80 dan belum di-commit/push/deploy.
+- Revisi ini berasal dari commit dasar `5bb3a80` dan sudah di-commit sebagai `52b81f4`
+  pada branch `main` tanggal 14 November 2026; workflow GitHub Actions berstatus Success.
+- Screenshot Vercel Production menunjukkan status Ready / Current untuk commit `52b81f4`.
+- Pemberitahuan lisensi telah diperiksa pada `#/modifikasi`, sebelum tes (`#/tes`),
+  dan pada halaman pertanyaan pertama (`#/kuis`).
+- Adaptasi Bahasa Indonesia belum menjalani validasi psikometrik formal; pemberitahuan
+  dan pengujian perangkat lunak tidak menggantikan studi validasi yang dipersyaratkan lisensi.
